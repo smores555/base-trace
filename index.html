@@ -44,6 +44,13 @@
         <label class="subtle mono"><input type="checkbox" id="muteLedger" /> Mute ledger</label>
         <label class="subtle mono" style="margin-left:8px"><input type="checkbox" id="muteOpen" /> Mute open box</label>
         <span id="status" class="subtle mono" style="margin-left:10px"></span>
+<div class="subtle mono" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto">
+  <span>Quick Adds (CA):</span>
+  <label>SEA +<input id="quickAddsSEA" type="number" value="0" style="width:64px"></label>
+  <label>ANC +<input id="quickAddsANC" type="number" value="0" style="width:64px"></label>
+  <label>PDX +<input id="quickAddsPDX" type="number" value="0" style="width:64px"></label>
+  <button class="secondary" id="applyQuickAdds">Apply</button>
+</div>
       </div>
       <div id="capTable"></div>
     <div class="card" style="margin-top:12px">
@@ -586,6 +593,15 @@
     }
 
     document.getElementById('runBtn').addEventListener('click', run);
+const qaBtn = document.getElementById('applyQuickAdds');
+if (qaBtn){ qaBtn.onclick = ()=>{
+  const sea = parseInt(document.getElementById('quickAddsSEA').value||'0',10)||0;
+  const anc = parseInt(document.getElementById('quickAddsANC').value||'0',10)||0;
+  const pdx = parseInt(document.getElementById('quickAddsPDX').value||'0',10)||0;
+  const setDelta = (b, s, v)=>{ const k=`${b}__${s}`; const c=capMap.get(k)||{base:b,seat:s,start:0,delta:0}; c.delta=v; capMap.set(k,c); };
+  setDelta('SEA','CA', sea); setDelta('ANC','CA', anc); setDelta('PDX','CA', pdx);
+  renderCapTable();
+}; }
     document.getElementById('resetDeltaBtn').addEventListener('click', ()=>{ for(const c of capMap.values()){ c.delta=0; } renderCapTable(); });
     document.getElementById('reloadBtn').addEventListener('click', loadJSON);
     loadJSON();
