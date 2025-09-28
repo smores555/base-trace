@@ -330,21 +330,38 @@
     function toNumberOrNull(v){
       const n = Number(v); return Number.isFinite(n) ? n : null;
     }
+    
     function extractBPL(w){
-      // honor explicit numeric fields or parse note/comment text
+      // If data says bpl_min == 0, then explicitly *no BPL*
+      const hasExplicitNoBpl = Number(w.bpl_min) === 0;
+      if (hasExplicitNoBpl) return {};
+
+      function toPos(n){
+        const x = Number(n);
+        return Number.isFinite(x) && x > 0 ? x : null;
+      }
       const out = {};
-      const cand = [w.bpl_rank_lte, w.bpl_top_n, w.bpl_percentile_lte];
-      if (cand.some(v=>v!==undefined)){
-        if (w.bpl_rank_lte !== undefined) out.rank_lte = toNumberOrNull(w.bpl_rank_lte);
-        if (w.bpl_top_n !== undefined) out.top_n = toNumberOrNull(w.bpl_top_n);
-        if (w.bpl_percentile_lte !== undefined) out.pct_lte = toNumberOrNull(w.bpl_percentile_lte);
-      } else {
+      // explicit numeric fields
+      const r = toPos(w.bpl_rank_lte);
+      const t = toPos(w.bpl_top_n);
+      const p = toPos(w.bpl_percentile_lte);
+      if (r!=null) out.rank_lte = r;
+      if (t!=null) out.top_n = t;
+      if (p!=null) out.pct_lte = p;
+
+      // optional parse from text only if none were set
+      if (!out.rank_lte && !out.top_n && !out.pct_lte){
         const txt = String(w.note || w.comment || w.label || '').toUpperCase();
         const m1 = txt.match(/BPL[^0-9]*([0-9]{1,4})/);
         const m2 = txt.match(/TOP[^0-9]*([0-9]{1,4})/);
-        if (m1) out.rank_lte = toNumberOrNull(m1[1]);
-        if (m2) out.top_n   = toNumberOrNull(m2[1]);
+        const r2 = m1 ? toPos(m1[1]) : null;
+        const t2 = m2 ? toPos(m2[1]) : null;
+        if (r2!=null) out.rank_lte = r2;
+        if (t2!=null) out.top_n   = t2;
       }
+      return out;
+    }
+
       return out;
     }
     function pilotRankIfMoved(p, toK){
