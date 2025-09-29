@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <div class="banner">Base Trace v20 — UI unchanged + TRACE — Updated 2025-09-29 17:56</div>
+  <div class="banner">Base Trace v21 — Trace fix + No-skip-on-stay in cascade — Updated 2025-09-29 18:02</div>
   <div class="wrap">
     <div class="card">
       <div class="toolbar">
@@ -160,6 +160,9 @@
       if(!box) return;
       box.textContent += (box.textContent ? '\\n' : '') + msg;
       box.scrollTop = box.scrollHeight;
+    // Fallback: also log to console for visibility
+    try { console.log(msg); } catch(e) {}
+
     }
     function clearTrace(){ const box=document.getElementById('traceLog'); if(box) box.textContent=''; }
     window.addEventListener('DOMContentLoaded', ()=>{
