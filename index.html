@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <div class="banner">Base Trace v17 — Vacancy-first allows FO→CA (seniority) — Updated 2025-09-29 17:41</div>
+  <div class="banner">Base Trace v18 — Robust prefs resolver (id/sen/pil{sen}) — Updated 2025-09-29 17:49</div>
   <div class="wrap">
     <div class="card">
       <div class="toolbar">
@@ -95,6 +95,34 @@
     const $status     = document.getElementById('status');
 
     const state = { running:false, pass:0, moves:[], maxPass:5000, maxMoves:100000 };
+
+    // ===== Robust preference resolver =====
+    function prefEntryFor(p){
+      // Try id as-is
+      if (p && p.id && prefs[p.id]) return prefs[p.id];
+      // Try SEN as string
+      const senStr = String(p?.sen ?? '');
+      if (senStr && prefs[senStr]) return prefs[senStr];
+      // Try "pil{sen}"
+      const pilKey = 'pil' + senStr;
+      if (prefs[pilKey]) return prefs[pilKey];
+      return null;
+    }
+
+
+    function debugPrefKey(p){
+      const on = (document.getElementById('traceEnabled')||{}).checked;
+      if(!on) return;
+      const pe = prefEntryFor(p);
+      let k = null;
+      if (pe){
+        for (const kk of Object.keys(prefs)){
+          if (prefs[kk]===pe){ k = kk; break; }
+        }
+      }
+      if (k){ logTrace(`  [prefKey=${k}]`); }
+    }
+
 
     // ===== Posted Adds Quota (vacancy-first) =====
     const AddsQuota = new Map(); // base -> remaining CA adds
@@ -285,7 +313,8 @@
     function seedIncumbents(){ const m=new Map(); const excl = (document.getElementById('chkExcludeIncumbents')||{}).checked; for(const p of roster){ if(excl && !isEligiblePilot(p)) continue; const k=key(p.current.base,p.current.seat); m.set(k,(m.get(k)||0)+1); } return m; }
     
 function rankPrefs(p){
-  const list = (prefs[p.id]?.preferences || []).slice().filter(x => x && x.stay !== true);
+  const pe = prefEntryFor(p);
+  const list = (pe?.preferences || []).slice().filter(x => x && x.stay !== true);
   list.sort((a,b)=> (a.order||0) - (b.order||0));
   let stopIdx = -1;
   for (let i=0; i<list.length; i++){
@@ -431,7 +460,8 @@ function rankPrefs(p){
         for (const p of sorted){
           if (moved.has(p.id||p.sen) || lockedStay.has(p.id||p.sen)) continue;
           const fromK = key(p.current.base, p.current.seat);
-          const prefsRanked = rankPrefs(p);
+          debugPrefKey(p);
+            const prefsRanked = rankPrefs(p);
           for (const w of prefsRanked){
             // If a bid equals current, treat as satisfied stay and lock pilot
             if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) { lockedStay.add(p.id||p.sen); break; }
