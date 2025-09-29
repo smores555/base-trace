@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <div class="banner">Base Trace v22 — Multi-hop enabled; seniors can re-move on later passes — Updated 2025-09-29 18:05</div>
+  <div class="banner">Base Trace v24 — Priority micro-pass for new vacancies — Updated 2025-09-29 18:19</div>
   <div class="wrap">
     <div class="card">
       <div class="toolbar">
@@ -115,6 +115,12 @@
     const $status     = document.getElementById('status');
 
     const state = { running:false, pass:0, moves:[], maxPass:5000, maxMoves:100000 };
+
+    // ===== Priority vacancy queue (ensures seniors get first crack next sweep) =====
+    const PriorityVacancies = new Set();  // set of seat keys 'BASE|SEAT'
+    function noteNewVacancy(k){ PriorityVacancies.add(k); }
+    function drainPriorityVacancies(){ const arr = Array.from(PriorityVacancies); PriorityVacancies.clear(); return arr; }
+
 
     // ===== Dynamic Occupants for BPL ranking =====
     const Occupants = new Map();
@@ -481,6 +487,7 @@ function rankPrefs(p){
             const eff = (Open.get(toK)||0) + (batchOpen.get(toK)||0); if (eff <= 0) continue;
             const bplCheck = bplSatisfied(p, want, toK); if (!bplCheck.ok) continue;
             if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true)){
+              if (fromK) noteNewVacancy(fromK);
               awarded = true;
               break;
             }
@@ -510,6 +517,7 @@ function rankPrefs(p){
             const eff = (Open.get(toK)||0) + (batchOpen.get(toK)||0); if (eff <= 0) continue;
             const bplCheck = bplSatisfied(p, w, toK); if (!bplCheck.ok) continue;
             if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true)){
+              if (fromK) noteNewVacancy(fromK);
               changed = true;
               break;
             }
