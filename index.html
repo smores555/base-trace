@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <div class="banner">Base Trace v25 — Full restart after EVERY award (vacancy & cascade) — Updated 2025-09-29 18:23</div>
+  <div class="banner">Base Trace v26 — Fix vacancy math (no fromK decrement in cascade) — Updated 2025-09-29 18:32</div>
   <div class="wrap">
     <div class="card">
       <div class="toolbar">
@@ -452,7 +452,7 @@ function rankPrefs(p){
       const moved = new Set();
       let totalMoves = 0;
 
-      function tryAward(p, fromK, toK, batchOpen, batchLedger, markBPL){
+      function tryAward(p, fromK, toK, batchOpen, batchLedger, markBPL, deferFromVacancy=false){
         // patched to use effective open
         if (fromK===toK) return false;
         const effTo = (Open.get(toK)||0) + (batchOpen.get(toK)||0);
@@ -486,7 +486,7 @@ function rankPrefs(p){
             const toK = key(base,'CA');
             const eff = (Open.get(toK)||0) + (batchOpen.get(toK)||0); if (eff <= 0) continue;
             const bplCheck = bplSatisfied(p, want, toK); if (!bplCheck.ok) continue;
-            if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true)){
+            if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true, /*deferFromVacancy*/ true)){
               if (fromK) noteNewVacancy(fromK);
               awarded = true;
               break;
@@ -516,7 +516,7 @@ function rankPrefs(p){
             const toK = key(w.base, w.seat);
             const eff = (Open.get(toK)||0) + (batchOpen.get(toK)||0); if (eff <= 0) continue;
             const bplCheck = bplSatisfied(p, w, toK); if (!bplCheck.ok) continue;
-            if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true)){
+            if (tryAward(p, fromK, toK, batchOpen, batchLedger, /*bpl*/true, /*deferFromVacancy*/ true)){
               if (fromK) noteNewVacancy(fromK);
               changed = true;
               break;
