@@ -102,6 +102,21 @@
 
     const state = { running:false, pass:0, moves:[], maxPass:5000, maxMoves:100000 };
 
+    // ===== Posted Adds Quota (vacancy-first) =====
+    // Per-base Captain adds (Δ) limit for the vacancy-first pass.
+    const AddsQuota = new Map(); // base -> remaining adds
+    function seedAddsQuota(){
+      AddsQuota.clear();
+      for (const [k,c] of capMap.entries()){
+        if (String(c.seat||'').toUpperCase() !== 'CA') continue;
+        const base = c.base;
+        const delta = Number((c.delta!=null ? c.delta : c.startDelta));
+        const adds = Number.isFinite(delta) && delta>0 ? delta : 0;
+        if (adds>0) AddsQuota.set(base, (AddsQuota.get(base)||0) + adds);
+      }
+    }
+
+
     // ===== Eligibility (Medical / Ineligible) =====
     const ineligible = new Set();
     function normKey(v){ return String(v||'').trim().toUpperCase(); }
@@ -275,7 +290,23 @@
     // ===== Engine: Vacancy‑first CA sweep → Cascade to fixed point =====
     function buildAdjusted(){ const m=new Map(); for(const [k,c] of capMap.entries()) m.set(k, (c.start|0)+(c.delta|0)); return m; }
     function seedIncumbents(){ const m=new Map(); const excl = (document.getElementById('chkExcludeIncumbents')||{}).checked; for(const p of roster){ if(excl && !isEligiblePilot(p)) continue; const k=key(p.current.base,p.current.seat); m.set(k,(m.get(k)||0)+1); } return m; }
-    function rankPrefs(p){ const list=(prefs[p.id]?.preferences||[]).slice().filter(x=>x && x.stay!==true); list.sort((a,b)=>(a.order||0)-(b.order||0)); return list; }
+    
+function rankPrefs(p){
+  const list = (prefs[p.id]?.preferences || []).slice().filter(x => x && x.stay !== true);
+  list.sort((a,b)=> (a.order||0) - (b.order||0));
+  // NEW: stop-after-home rule — if current base/seat appears, truncate at that point.
+  let stopIdx = -1;
+  for (let i=0; i<list.length; i++){
+    if (sameChoice(list[i].base, list[i].seat, p.current.base, p.current.seat)){
+      stopIdx = i; break;
+    }
+  }
+  if (stopIdx >= 0){
+    return list.slice(0, stopIdx + 1); // include the home entry; engine will treat it as HIT STAY
+  }
+  return list;
+}
+
 
     // ===== BPL (Base Position Limit) helpers =====
     function toNumberOrNull(v){
