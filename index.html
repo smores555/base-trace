@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <div class="banner">Base Trace v13 — Updated 2025-09-28 23:52</div>
+  <div class="banner">Base Trace v17 — Vacancy-first allows FO→CA (seniority) — Updated 2025-09-29 17:41</div>
   <div class="wrap">
     <div class="card">
       <div class="toolbar">
@@ -43,13 +43,7 @@
         <button class="secondary" id="reloadBtn">Reload JSON</button>
         <label class="subtle mono"><input type="checkbox" id="muteLedger" /> Mute ledger</label>
         <label class="subtle mono" style="margin-left:8px"><input type="checkbox" id="muteOpen" /> Mute open box</label>
-        <span id="status"></span>
-<div class="subtle mono" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto"><span>Quick Adds (CA):</span>
-<label>SEA +<input id="quickAddsSEA" type="number" value="0" style="width:64px"></label>
-<label>ANC +<input id="quickAddsANC" type="number" value="0" style="width:64px"></label>
-<label>PDX +<input id="quickAddsPDX" type="number" value="0" style="width:64px"></label>
-<button class="secondary" id="applyQuickAdds">Apply</button>
-</div><span id="status" style="display:none" class="subtle mono" style="margin-left:10px"></span>
+        <span id="status" class="subtle mono" style="margin-left:10px"></span>
       </div>
       <div id="capTable"></div>
     </div>
@@ -103,8 +97,7 @@
     const state = { running:false, pass:0, moves:[], maxPass:5000, maxMoves:100000 };
 
     // ===== Posted Adds Quota (vacancy-first) =====
-    // Per-base Captain adds (Δ) limit for the vacancy-first pass.
-    const AddsQuota = new Map(); // base -> remaining adds
+    const AddsQuota = new Map(); // base -> remaining CA adds
     function seedAddsQuota(){
       AddsQuota.clear();
       for (const [k,c] of capMap.entries()){
@@ -115,7 +108,7 @@
         if (adds>0) AddsQuota.set(base, (AddsQuota.get(base)||0) + adds);
       }
     }
-
+    
 
     // ===== Eligibility (Medical / Ineligible) =====
     const ineligible = new Set();
@@ -294,7 +287,6 @@
 function rankPrefs(p){
   const list = (prefs[p.id]?.preferences || []).slice().filter(x => x && x.stay !== true);
   list.sort((a,b)=> (a.order||0) - (b.order||0));
-  // NEW: stop-after-home rule — if current base/seat appears, truncate at that point.
   let stopIdx = -1;
   for (let i=0; i<list.length; i++){
     if (sameChoice(list[i].base, list[i].seat, p.current.base, p.current.seat)){
@@ -302,11 +294,10 @@ function rankPrefs(p){
     }
   }
   if (stopIdx >= 0){
-    return list.slice(0, stopIdx + 1); // include the home entry; engine will treat it as HIT STAY
+    return list.slice(0, stopIdx + 1);
   }
   return list;
 }
-
 
     // ===== BPL (Base Position Limit) helpers =====
     function toNumberOrNull(v){
@@ -553,28 +544,6 @@ function rankPrefs(p){
     document.getElementById('resetDeltaBtn').addEventListener('click', ()=>{ for(const c of capMap.values()){ c.delta=0; } renderCapTable(); });
     document.getElementById('reloadBtn').addEventListener('click', loadJSON);
     loadJSON();
-  
-    // --- Quick Adds (CA) ---
-    (function(){
-      const btn = document.getElementById('applyQuickAdds');
-      if(!btn) return;
-      btn.onclick = ()=>{
-        const sea = parseInt(document.getElementById('quickAddsSEA').value||'0',10)||0;
-        const anc = parseInt(document.getElementById('quickAddsANC').value||'0',10)||0;
-        const pdx = parseInt(document.getElementById('quickAddsPDX').value||'0',10)||0;
-        function setDelta(base, delta){
-          const k = key(base,'CA');
-          const c = capMap.get(k) || {base, seat:'CA', start:0, startCapacity:0, delta:0};
-          c.delta = delta;
-          capMap.set(k, c);
-        }
-        setDelta('SEA', sea);
-        setDelta('ANC', anc);
-        setDelta('PDX', pdx);
-        renderCapTable();
-      };
-    })();
-    
-</script>
+  </script>
 </body>
 </html>
