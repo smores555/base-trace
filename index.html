@@ -46,6 +46,16 @@
         <span id="status" class="subtle mono" style="margin-left:10px"></span>
       </div>
       <div id="capTable"></div>
+
+<!-- Minimal Eligibility panel (hidden) to satisfy DOM lookups -->
+<div id="eligPanel" style="display:none">
+  <div id="eligStatus"></div>
+  <textarea id="ineligibleList"></textarea>
+  <label><input type="checkbox" id="chkExcludeIncumbents"> Exclude incumbents</label>
+  <button id="btnApplyIneligible" type="button">Apply</button>
+  <button id="btnClearIneligible" type="button">Clear</button>
+</div>
+
 <div class="card" style="margin-top:12px">
   <h3>Pilot Trace</h3>
   <div class="subtle" style="margin-bottom:6px">Type a pilot <b>Name</b> or <b>SEN</b>, tick enable, then Run. Logs each consideration and reason.</div>
