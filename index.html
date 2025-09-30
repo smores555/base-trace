@@ -3,87 +3,100 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Base Trace — Vacancy Ledger Build</title>
+<title>Base Bid — v26 UI Skin + Vacancy Ledger Logic</title>
 <style>
   :root{
     --bg:#071222; --fg:#eaf2ff; --muted:#a9b6d4; --card:#0b162a; --border:#1e2a44;
-    --accent:#6aa6ff; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --pill:#0f223f; --accent:#6aa6ff;
   }
   html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;}
-  .wrap{max-width:1100px;margin:28px auto;padding:0 16px;}
-  .banner{padding:10px 14px;border:1px solid var(--border);background:#0c1930;border-radius:12px;margin-bottom:16px}
-  h1{font-size:18px;margin:0 0 8px 0}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .wrap{max-width:1200px;margin:28px auto;padding:0 16px;}
+  .banner{padding:10px 14px;border:1px solid var(--border);background:#0c1930;border-radius:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pill{background:var(--pill);padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:14px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
-  button{background:#17325d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
-  button.secondary{background:#0f223f}
-  input,select,textarea{background:#0b1426;color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:8px}
+  h1{font-size:16px;margin:0 0 8px 0}
+  h2{font-size:14px;margin:10px 0 6px 0;color:var(--muted)}
   table{width:100%;border-collapse:collapse}
   th,td{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left}
+  input,select,textarea{background:#0b1426;color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:8px}
+  button{background:#17325d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+  button.secondary{background:#0f223f}
   .mono{font-family:var(--mono)}
   .muted{color:var(--muted)}
-  .kv{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .box{border:1px solid var(--border);border-radius:10px;padding:8px;background:#0e1830}
+  .list{max-height:360px;overflow:auto;white-space:pre-wrap}
+  .small{font-size:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="banner"><b>Base Trace — v30 (Explicit Vacancy Ledger)</b> &nbsp;|&nbsp;
-    Vacancy-first: CA Δ quota, FO→CA allowed, defers backfills → Cascade. Cascade: restart after any award, multi‑hop, stop‑after‑home, incumbency protection.
+  <div class="banner">
+    <div><b>Base Bid — v26 UI</b> <span class="pill">Vacancy Ledger Engine</span></div>
+    <div class="row small">
+      <span id="status" class="mono muted">Ready.</span>
+    </div>
   </div>
 
   <div class="grid">
+    <!-- LEFT: Controls -->
     <div class="card">
       <h1>Controls</h1>
-      <div class="flex">
+      <div class="row">
         <button id="btnRun">Run</button>
-        <button class="secondary" id="btnClear">Clear Ledger</button>
-        <span id="status" class="mono muted"></span>
+        <button class="secondary" id="btnExport">Export Movers CSV</button>
+        <button class="secondary" id="btnClear">Clear</button>
       </div>
-      <div style="margin-top:10px">
-        <div class="muted">JSON files must sit next to this page:</div>
-        <div class="mono muted">roster.json, preferences.json, capacities.json</div>
-      </div>
-    </div>
 
-    <div class="card">
-      <h1>Pilot Trace</h1>
-      <div class="flex">
-        <input id="traceQuery" placeholder="SEN or NAME e.g. 1010 or SMITH, JASON" style="min-width:260px"/>
+      <h2>Vacancies (Δ adds, CA only)</h2>
+      <div class="small muted" style="margin-bottom:6px">Edit posted adds per base for Captains; saved in-memory for this run.</div>
+      <table id="capTable">
+        <thead><tr><th>Base</th><th>Seat</th><th>Δ</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>Pilot Trace</h2>
+      <div class="row">
+        <input id="traceQuery" placeholder="SEN or NAME e.g. 1010 or SMITH, JASON" style="min-width:260px">
         <label class="muted"><input type="checkbox" id="traceEnabled"> Enable trace</label>
-        <button class="secondary" id="traceClear">Clear trace</button>
+        <button class="secondary" id="btnTraceClear">Clear</button>
       </div>
-      <pre id="traceLog" class="mono" style="white-space:pre-wrap;background:#0f182a;border:1px solid var(--border);padding:8px;border-radius:8px;max-height:260px;overflow:auto;margin-top:8px"></pre>
+      <pre id="traceLog" class="mono box list" style="max-height:180px"></pre>
     </div>
 
-    <div class="card">
-      <h1>Vacancy Editor (Δ)</h1>
-      <div class="muted" style="margin-bottom:6px">Edit CA posted adds by base (saves to memory only for this run).</div>
-      <table id="vacTable"><thead><tr><th>Base</th><th>Seat</th><th>Δ (adds)</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div class="card">
-      <h1>Results</h1>
-      <div class="flex" style="margin-bottom:6px">
-        <button class="secondary" id="btnExportMovers">Export Movers CSV</button>
+    <!-- RIGHT: Results -->
+    <div class="cols">
+      <div class="card">
+        <h1>Movers & Upgrades (Seniority order)</h1>
+        <pre id="movers" class="mono box list" style="max-height:420px"></pre>
       </div>
-      <pre id="ledgerOut" class="mono" style="white-space:pre-wrap;background:#0f182a;border:1px solid var(--border);padding:8px;border-radius:8px;max-height:380px;overflow:auto;"></pre>
+      <div class="card">
+        <h1>Vacancy Ledger</h1>
+        <pre id="vacLedger" class="mono box list" style="max-height:420px"></pre>
+      </div>
+      <div class="card" style="grid-column:1 / span 2">
+        <h1>Detailed Ledger</h1>
+        <pre id="ledger" class="mono box list" style="max-height:320px"></pre>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-const state = { running:false, pass:0, moves:[], maxPass:5000 };
+// ===== State
+const state = { running:false, pass:0, moves:[] };
 
-// ===== Utilities / UI =====
+// ===== Utils
 function key(base, seat){ return `${String(base).toUpperCase()}|${String(seat).toUpperCase()}`; }
 function qNorm(s){ return String(s||'').trim().toUpperCase(); }
+function setStatus(s){ const el=document.getElementById('status'); if(el) el.textContent=s; }
 function logTrace(msg){
-  try{
-    const box = document.getElementById('traceLog');
-    if (box){ box.textContent += (box.textContent ? '\\n' : '') + msg; box.scrollTop = box.scrollHeight; }
-    console.log(msg);
-  }catch(e){}
+  const box = document.getElementById('traceLog');
+  if (box){ box.textContent += (box.textContent ? '\\n' : '') + msg; box.scrollTop = box.scrollHeight; }
+  try { console.log(msg); } catch(e){}
 }
 function pilotMatchesTrace(p){
   const on = document.getElementById('traceEnabled').checked;
@@ -94,19 +107,18 @@ function pilotMatchesTrace(p){
   if (q === qNorm(p.name)) return true;
   return false;
 }
-function setStatus(s){ const el=document.getElementById('status'); if(el) el.textContent=s; }
 function csvEscape(x){ return `"${String(x).replace(/"/g,'""')}"`; }
 
-// ===== Data =====
+// ===== Data
 let roster=[], preferences={}, capacities=[];
 
-// ===== Explicit Vacancy Ledger =====
-const Vac = new Map(); // "BASE|SEAT" -> integer
+// ===== Vacancy Ledger
+const Vac = new Map(); // "BASE|SEAT" -> int
 function vacAmt(k){ return Vac.get(k)||0; }
 function vacInc(k, n=1){ Vac.set(k, (Vac.get(k)||0) + n); }
 function vacDec(k, n=1){ Vac.set(k, Math.max(0, (Vac.get(k)||0) - n)); }
 
-// Occupants (live) to support BPL or sanity if needed
+// Live occupants
 const Occupants = new Map();
 function seedOccupants(){
   Occupants.clear();
@@ -122,7 +134,7 @@ function moveOccupant(p, fromK, toK){
   Occupants.get(toK).add(p.sen);
 }
 
-// Robust preferences resolver
+// Preferences
 function prefEntryFor(p){
   if (p && p.id && preferences[p.id]) return preferences[p.id];
   const senStr = String(p?.sen ?? '');
@@ -131,8 +143,6 @@ function prefEntryFor(p){
   if (preferences[pilKey]) return preferences[pilKey];
   return null;
 }
-
-// Stop-after-home
 function sameChoice(b1,s1,b2,s2){
   return String(b1).toUpperCase()===String(b2).toUpperCase() &&
          String(s1).toUpperCase()===String(s2).toUpperCase();
@@ -149,46 +159,58 @@ function rankPrefs(p){
   if (stopIdx>=0) return list.slice(0, stopIdx+1);
   return list;
 }
+function bplSatisfied(p,w,toK){ return {ok:true, reason:''}; } // stub
 
-// BPL stub (always ok unless you want rules)
-function bplSatisfied(p, w, toK){ return { ok:true, reason:'' }; }
-
-// Render helpers
-function renderVacTable(){
-  const tb = document.querySelector('#vacTable tbody'); if(!tb) return;
-  tb.innerHTML='';
-  const rows = capacities.filter(c => String(c.seat||'').toUpperCase()==='CA')
-    .map(c => ({base:c.base, seat:c.seat, delta:Number(c.delta||0)}));
-  // de-duplicate base+seat
+// ===== Render
+function renderCapTable(){
+  const tb = document.querySelector('#capTable tbody'); if(!tb) return;
+  tb.innerHTML = '';
+  // List CA seats only
+  const ca = capacities.filter(c => String(c.seat||'').toUpperCase()==='CA');
   const seen = new Set();
-  for (const r of rows){
-    const k = key(r.base,r.seat);
+  for (const c of ca){
+    const k = key(c.base, c.seat);
     if (seen.has(k)) continue; seen.add(k);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td class="mono">${r.base}</td><td class="mono">${r.seat}</td>
-      <td><input type="number" step="1" value="${r.delta}" data-base="${r.base}" data-seat="${r.seat}"/></td>`;
+    tr.innerHTML = `<td class="mono">${c.base}</td><td class="mono">${c.seat}</td>
+      <td><input type="number" value="${Number(c.delta||0)}" data-base="${c.base}" data-seat="${c.seat}"/></td>`;
     tb.appendChild(tr);
   }
-  tb.querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('change', e=>{
-      const base = inp.dataset.base, seat = inp.dataset.seat;
-      // update capacities array in-memory
+  tb.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', ()=>{
+      const b = inp.getAttribute('data-base'), s = inp.getAttribute('data-seat');
       for (const c of capacities){
-        if (String(c.base).toUpperCase()===String(base).toUpperCase() &&
-            String(c.seat).toUpperCase()===String(seat).toUpperCase()){
+        if (String(c.base).toUpperCase()===String(b).toUpperCase() &&
+            String(c.seat).toUpperCase()===String(s).toUpperCase()){
           c.delta = Number(inp.value||0);
         }
       }
     });
   });
 }
+function renderVacLedger(){
+  const out = document.getElementById('vacLedger'); if(!out) return;
+  const lines = [];
+  for (const [k,v] of Array.from(Vac.entries()).sort()){
+    const [b,s] = k.split('|');
+    if (s!=='CA') continue;
+    lines.push(`${b} ${s}: Vac=${v}`);
+  }
+  out.textContent = lines.join('\n');
+}
+function renderMoversBySeniority(ledger){
+  const out = document.getElementById('movers'); if(!out) return;
+  const rows = ledger.slice().sort((a,b)=> (a.sen||1e9)-(b.sen||1e9)).map(l => {
+    const [fb,fs] = (l.from||'|').split('|'); const [tb,ts] = (l.to||'|').split('|');
+    return `${l.sen} ${l.name} — ${fb} ${fs} → ${tb} ${ts}`;
+  });
+  out.textContent = rows.join('\n');
+}
 function renderLedger(ledger){
-  const out = document.getElementById('ledgerOut'); if(!out) return;
+  const out = document.getElementById('ledger'); if(!out) return;
   out.textContent = ledger.map(l => `${l.sen} ${l.name} — ${l.from} → ${l.to}`).join('\n');
 }
-
-// CSV export
-function exportMoversCSV(ledger){
+function exportCSV(ledger){
   const header = ['sen','name','from_base','from_seat','to_base','to_seat'];
   const rows = ledger.map(l=>{
     const [fb,fs] = (l.from||'|').split('|'); const [tb,ts] = (l.to||'|').split('|');
@@ -202,47 +224,49 @@ function exportMoversCSV(ledger){
   URL.revokeObjectURL(url);
 }
 
-// ===== Core engine =====
+// ===== IO
 async function loadJSON(){
-  const f = (p)=> fetch(p).then(r=>{ if(!r.ok) throw new Error(p+': '+r.status); return r.json(); });
-  [roster, preferences, capacities] = await Promise.all([f('roster.json'), f('preferences.json'), f('capacities.json')]);
+  const load = (p)=> fetch(p).then(r=>{ if(!r.ok) throw new Error(`${p}: ${r.status}`); return r.json(); });
+  [roster, preferences, capacities] = await Promise.all([load('roster.json'), load('preferences.json'), load('capacities.json')]);
 }
 
+// ===== Engine helpers
 function seedVacFromCap(){
   Vac.clear();
-  // Initialize all seats we know about
+  // init
   for (const c of capacities){ Vac.set(key(c.base,c.seat), 0); }
-  // Seed CA posted adds
+  // seed CA adds
   for (const c of capacities){
     if (String(c.seat||'').toUpperCase()!=='CA') continue;
     const d = Number(c.delta||0);
-    if (d>0){ Vac.set(key(c.base,c.seat), (Vac.get(key(c.base,c.seat))||0) + d); }
+    if (d>0) vacInc(key(c.base,c.seat), d);
   }
-  // Also apply any UI edits to CA deltas already in capacities
+  renderVacLedger();
 }
-
-function tryAward(p, fromK, toK, ledger){
-  // ledger push
-  ledger.push({sen:p.sen, name:p.name, from:fromK, to:toK});
-  // mutate pilot
+function award(p, fromK, toK, ledger, tag){
+  ledger.push({sen:p.sen, name:p.name, from:fromK, to:toK, tag});
   const [tb,ts] = toK.split('|');
   p.current = {...p.current, base:tb, seat:ts};
   moveOccupant(p, fromK, toK);
+  renderLedger(ledger);
+  renderMoversBySeniority(ledger);
+  state.moves.push({sen:p.sen, from:fromK, to:toK});
 }
 
+// ===== Run
 async function run(){
   try{
     state.running=true; state.pass=1; state.moves.length=0;
     setStatus('Running…');
-    const sorted = roster.slice().sort((a,b)=> (a.sen||1e9)-(b.sen||1e9));
+    await loadJSON();
+    renderCapTable();
     seedOccupants();
     seedVacFromCap();
-    renderVacTable();
 
+    const sorted = roster.slice().sort((a,b)=> (a.sen||1e9)-(b.sen||1e9));
     const ledger = [];
-    const traceOn = document.getElementById('traceEnabled').checked;
 
-    // ===== Vacancy-first: CA posted adds (FO→CA allowed), consume Vac[to], DON'T add Vac[from]
+    // Vacancy-first (CA posted adds), FO→CA allowed, consume Vac[to], DON'T add Vac[from]
     let changed = true;
     while (changed){
       changed = false;
@@ -250,55 +274,50 @@ async function run(){
         const prefsCA = rankPrefs(p).filter(w => String(w.seat||'').toUpperCase()==='CA');
         if (!prefsCA.length) continue;
         const fromK = key(p.current.base, p.current.seat);
+        let got = false;
         for (const w of prefsCA){
           const toK = key(w.base, 'CA');
           const have = vacAmt(toK);
           if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] Considering ${p.sen} ${p.name} for ${w.base} CA (Vac=${have})`);
           if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy — incumbency protection'); continue; }
-          const bpl = bplSatisfied(p,w,toK); if (!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL fail'); continue; }
-          // Award
-          tryAward(p, fromK, toK, ledger);
-          vacDec(toK, 1); // consume posted add
-          if (pilotMatchesTrace(p)) logTrace(`  AWARD: ${fromK} → ${toK} (posted add)`);
-          renderLedger(ledger);
-          state.moves.push({sen:p.sen, from:fromK, to:toK});
-          state.pass++;
-          changed = true;
-          break; // restart from top after every award
+          const bpl = bplSatisfied(p,w,toK); if (!bpl.ok){ if (pilotMatchesTrace(p)) logTrace(`  REJECT: BPL fail (${bpl.reason})`); continue; }
+          award(p, fromK, toK, ledger, 'posted-add');
+          vacDec(toK,1);
+          if (pilotMatchesTrace(p)) logTrace(`  AWARD: ${fromK} → ${toK} (posted-add)`);
+          state.pass++; changed=true; got=true;
+          renderVacLedger();
+          break;
         }
-        if (changed) break;
+        if (got) break; // restart from top
       }
     }
 
-    // ===== Cascade/backfill: restart from top after ANY award; multi-hop; create real vacancies from departures
-    let movedThisSweep = true;
-    while (movedThisSweep){
-      movedThisSweep = false;
+    // Cascade: restart from top after ANY award; multi-hop; create real vacancies where people leave
+    let movedSweep = true;
+    while (movedSweep){
+      movedSweep = false;
       for (const p of sorted){
         const fromK = key(p.current.base, p.current.seat);
         const prefs = rankPrefs(p);
         let got = false;
         for (const w of prefs){
           if (sameChoice(w.base,w.seat,p.current.base,p.current.seat)){
-            if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] HIT STAY: ${w.base} ${w.seat} — later prefs ignored`);
+            if (pilotMatchesTrace(p)) { logTrace(`[PASS ${state.pass}] HIT STAY: ${w.base} ${w.seat}`); logTrace('  STOP-AFTER-HOME rule: later prefs ignored'); }
             break;
           }
           const toK = key(w.base, w.seat);
           const have = vacAmt(toK);
           if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`);
           if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy — incumbency protection'); continue; }
-          const bpl = bplSatisfied(p,w,toK); if (!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL fail'); continue; }
-          // Award
-          tryAward(p, fromK, toK, ledger);
-          vacDec(toK, 1); vacInc(fromK, 1); // real vacancy created where they left
+          const bpl = bplSatisfied(p,w,toK); if (!bpl.ok){ if (pilotMatchesTrace(p)) logTrace(`  REJECT: BPL fail (${bpl.reason})`); continue; }
+          award(p, fromK, toK, ledger, 'cascade');
+          vacDec(toK,1); vacInc(fromK,1);
           if (pilotMatchesTrace(p)) logTrace(`  AWARD: ${fromK} → ${toK} (cascade)`);
-          renderLedger(ledger);
-          state.moves.push({sen:p.sen, from:fromK, to:toK});
-          state.pass++;
-          movedThisSweep = true; got=true;
+          state.pass++; movedSweep=true; got=true;
+          renderVacLedger();
           break;
         }
-        if (movedThisSweep) break;
+        if (movedSweep) break; // restart from top
       }
     }
 
@@ -306,23 +325,18 @@ async function run(){
   }catch(e){
     console.error(e);
     setStatus('Error: '+e.message);
-  } finally {
+  }finally{
     state.running=false;
   }
 }
 
-// ===== Boot / events =====
-async function boot(){
-  try{
-    await loadJSON();
-    renderVacTable();
-    document.getElementById('btnRun').onclick = run;
-    document.getElementById('btnClear').onclick = ()=>{ document.getElementById('ledgerOut').textContent=''; document.getElementById('traceLog').textContent=''; };
-    document.getElementById('traceClear').onclick = ()=>{ document.getElementById('traceLog').textContent=''; };
-    setStatus('Ready.');
-  }catch(e){
-    setStatus('Load error: '+e.message+' — place roster.json, preferences.json, capacities.json next to this file.');
-  }
+// ===== Boot
+function boot(){
+  document.getElementById('btnRun').onclick = run;
+  document.getElementById('btnExport').onclick = ()=> exportCSV(state.moves.map(m => ({...m, name: (roster.find(r=>r.sen===m.sen)||{}).name })));
+  document.getElementById('btnClear').onclick = ()=>{ document.getElementById('movers').textContent=''; document.getElementById('ledger').textContent=''; document.getElementById('traceLog').textContent=''; };
+  document.getElementById('btnTraceClear').onclick = ()=>{ document.getElementById('traceLog').textContent=''; };
+  setStatus('Ready. Place roster.json, preferences.json, capacities.json alongside this file.');
 }
 boot();
 </script>
