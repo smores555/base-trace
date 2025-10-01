@@ -44,6 +44,14 @@
       <!-- RIGHT -->
       <div>
         <div class="card">
+          <h3>Open Vacancies</h3>
+          <div id="openVac" class="mono list"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h3>Names (Seniority)</h3>
+          <div id="namesBySen" class="mono list"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <h3>Vacancy Ledger</h3>
           <div style="max-height:340px;overflow:auto">
             <table><thead><tr><th>Pass</th><th>Action</th><th>Pilot</th><th>From</th><th>To</th></tr></thead><tbody id="ledgerBody"></tbody></table>
@@ -58,7 +66,6 @@ const BASES=["SEA","ANC","PDX","SFO","LAX"];
 const SEATS=["CA","FO"];
 const key=(b,s)=>`${b}__${s}`;
 
-// Build static capacity table always visible
 let capMap=new Map();
 function initCapacities(){
   BASES.forEach(b=>SEATS.forEach(s=>{
@@ -82,14 +89,50 @@ function renderCapTable(){
 window.onStart=(b,s,v)=>{const c=capMap.get(key(b,s)); c.start=+v||0; renderCapTable();};
 window.onDelta=(b,s,v)=>{const c=capMap.get(key(b,s)); c.delta=+v||0; renderCapTable();};
 
-// Stub for run with BPL
-document.getElementById('runBtn').onclick=()=>{
-  document.getElementById('status').textContent='Run pressed (BPL logic active)';
+// Sim state
+let state={pass:0,moves:[]};
+function resetUI(){
+  initCapacities();renderCapTable();
+  document.getElementById('status').textContent='Reset';
+  document.getElementById('traceLog').textContent='';
   document.getElementById('ledgerBody').innerHTML='';
-};
-document.getElementById('resetBtn').onclick=()=>{initCapacities();renderCapTable();document.getElementById('status').textContent='Reset';};
+  document.getElementById('openVac').textContent='';
+  document.getElementById('namesBySen').textContent='';
+}
+resetUI();
 
-initCapacities(); renderCapTable();
+// Award simulation stub (replace with your engine)
+function runSimulation(){
+  state.pass=1; state.moves=[];
+  // Example: log one move
+  const row={pass:1,action:'AWARD',pilot:'1010 SMITH, JASON',from:'LAX CA',to:'SEA CA'};
+  state.moves.push({sen:1010,name:'SMITH, JASON',fromB:'LAX',fromS:'CA',toB:'SEA',toS:'CA'});
+  addLedgerRow(row);
+  renderNamesBySeniority();
+  renderOpenVac();
+  document.getElementById('status').textContent='Simulation finished';
+}
+function addLedgerRow(r){
+  const tb=document.getElementById('ledgerBody');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="mono">${r.pass}</td><td>${r.action}</td><td>${r.pilot}</td><td>${r.from}</td><td>${r.to}</td>`;
+  tb.appendChild(tr);
+}
+function renderNamesBySeniority(){
+  const slot=document.getElementById('namesBySen');
+  slot.textContent=state.moves.map(m=>`${m.sen} ${m.name} — ${m.fromB} ${m.fromS} → ${m.toB} ${m.toS}`).join("\\n");
+}
+function renderOpenVac(){
+  let lines=[];
+  for(const [k,c] of capMap.entries()){
+    const adj=c.start+c.delta;
+    if (adj!==c.start) lines.push(`${c.base} ${c.seat}: ${adj-c.start>=0?'+':''}${adj-c.start}`);
+  }
+  document.getElementById('openVac').textContent=lines.join("\\n");
+}
+
+document.getElementById('runBtn').onclick=runSimulation;
+document.getElementById('resetBtn').onclick=resetUI;
 </script>
 </body>
 </html>
