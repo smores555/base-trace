@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bases Bid — v31-look + BPL + Editable Capacities</title>
+<title>Base Trace v31 — Vacancy-ledger, Restart-every-award, Improve-only, Lock at #1 — Updated now</title>
 <style>
   :root{--bg:#0b1220;--card:#111a2b;--muted:#8aa4c1;--text:#eaf2ff;--accent:#8ad2ff;--border:#1f2a44}
   *{box-sizing:border-box}
@@ -247,9 +247,7 @@ function seedVacFromCap(){
 }
 
 // award
-const pinned=new Set();
-const bestRank=new Map();
-function award(p, fromK, toK, tag, rows){
+function award(p, fromK, toK, rows){
   const [tb,ts]=toK.split('__'); const [fb,fs]=(fromK||'|').split('__');
   rows.push({pass:state.pass, action:"FILLED",  pilot:`SEN ${p.sen}`, from:"", to:`${tb} ${ts}`});
   if (fromK) rows.push({pass:state.pass, action:"CREATED", pilot:`SEN ${p.sen}`, from:`${fb} ${fs}`, to:""});
@@ -279,7 +277,7 @@ function priorityFill(sorted){
         state.pass++;
         const fromK=key(p.current.base,p.current.seat);
         const rows=[];
-        award(p, fromK, toK, 'priority', rows);
+        award(p, fromK, toK, rows);
         vacDec(toK,1); if(fromK){ vacInc(fromK,1); noteOpen(fromK); }
         renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
         return true;
@@ -290,6 +288,8 @@ function priorityFill(sorted){
 }
 
 // run
+const pinned=new Set();
+const bestRank=new Map();
 async function run(){
   if (state.running) return;
   state.running=true; state.pass=0; state.moves=[];
@@ -330,7 +330,7 @@ async function run(){
           // award
           state.pass++;
           const rows=[];
-          award(p, fromK, toK, 'posted-add', rows);
+          award(p, fromK, toK, rows);
           vacDec(toK,1); if(fromK){ vacInc(fromK,1); noteOpen(fromK); }
           renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
           awarded=true;
@@ -366,7 +366,7 @@ async function run(){
           // award
           state.pass++;
           const rows=[];
-          award(p, fromK, toK, 'cascade', rows);
+          award(p, fromK, toK, rows);
           vacDec(toK,1); if(fromK){ vacInc(fromK,1); noteOpen(fromK); }
           renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
           awarded=true;
