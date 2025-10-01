@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Base Trace v31 — Vacancy-ledger, Restart-every-award, Improve-only, Lock at #1 — Updated now</title>
+<title>Base Trace v32 — Vacancy-ledger, Restart-every-award, Improve-only, Lock at #1 — Updated now</title>
 <style>
   :root{--bg:#0b1220;--card:#111a2b;--muted:#8aa4c1;--text:#eaf2ff;--accent:#8ad2ff;--border:#1f2a44}
   *{box-sizing:border-box}
@@ -27,7 +27,7 @@
 </style>
 </head>
 <body>
-  <div class="banner">Base Trace v31 — Vacancy-ledger, Restart-every-award, Improve-only, Lock at #1 — Updated now</div>
+  <div class="banner">Base Trace v32 — Vacancy-ledger, Restart-every-award, Improve-only, Lock at #1 — Updated now</div>
   <div class="wrap">
     <div class="grid">
       <!-- LEFT -->
@@ -220,7 +220,21 @@ async function loadJSON(){
   const caps = await (f('capacities.json') || f('data/capacities.json'));
   const rost = await (f('roster.json')     || f('data/roster.json'));
   const prfs = await (f('preferences.json')|| f('data/preferences.json'));
-  if (!caps || !rost || !prfs) throw new Error('Place roster.json, preferences.json, capacities.json next to this file.');
+  let warn=[];
+  if (!caps) warn.push('capacities.json missing'); 
+  if (!rost) warn.push('roster.json missing'); 
+  if (!prfs) warn.push('preferences.json missing');
+  if (!caps && !rost && !prfs){
+    // full demo fallback
+    caps = BASES.flatMap(b=>SEATS.map(s=>({base:b, seat:s, startCapacity:(s==='CA'?50:100), delta:0})));
+    rost = Array.from({length:50}, (_,i)=>({ id:`P${i+1}`, sen:i+1, name:`Pilot ${i+1}`, current:{base: BASES[i%BASES.length], seat:(i%3===0?'CA':'FO')} }));
+    prfs = {};
+    for(const p of rost){ prfs[p.id] = { preferences: [{order:1, base:p.current.base, seat:p.current.seat},{order:2, base:'SEA', seat:'CA'}] }; }
+    document.getElementById('status').textContent='Demo data active (no JSON files found)';
+  } else {
+    // partial data: still render table if caps exist; show status warning
+    if (warn.length) { document.getElementById('status').textContent='Loaded with warnings: '+warn.join(', '); }
+  }
   capMap.clear();
   for (const c of caps){
     const b=q(c.base), s=q(c.seat);
