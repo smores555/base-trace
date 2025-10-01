@@ -200,7 +200,22 @@ window.addEventListener('DOMContentLoaded', ()=>{
 });
 
 // ===== BPL (optional) — stub always OK for now =====
-function bplSatisfied(p, w, toK){ return { ok:true, reason:null }; }
+function bplSatisfied(p, w, toK){
+  const min = Number(w.bpl_min || 0);
+  if (!min) return { ok: true, reason: null }; // no BPL requirement on this wish
+
+  // Count incumbents with smaller (senior) SEN already in the target seat
+  const occ = Occupants.get(toK) || new Set();
+  let seniorsAhead = 0;
+  for (const sen of occ) if (sen < p.sen) seniorsAhead++;
+
+  const projectedPos = seniorsAhead + 1; // where pilot would rank if awarded
+  const ok = projectedPos <= min;
+
+  return ok
+    ? { ok: true,  reason: null }
+    : { ok: false, reason: `projected position ${projectedPos} > BPL ${min}` };
+}; }
 
 // ===== UI: capacities table =====
 function groupByBase(){
