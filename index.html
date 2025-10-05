@@ -1,404 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Base‑Trace — Delta Editor + Movement Ledger</title>
+  <title>Base Trace v32 — BPL Enabled</title>
   <style>
-    :root { --bg:#0b1220; --card:#101a2d; --ink:#eaf2ff; --muted:#9cb0cf; --accent:#7bd3ff; --border:#1f2a44; --good:#34d399; --warn:#fbbf24; --bad:#ff8fa3 }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
-    header{position:sticky;top:0;z-index:9;background:#0e213f;border-bottom:2px solid var(--accent);padding:10px 14px;display:flex;gap:12px;align-items:center}
-    h1{font-size:16px;margin:0 8px 0 0}
-    .tag{border:1px solid var(--border);background:#13223e;border-radius:999px;padding:2px 8px;font-size:12px;color:#cfe6ff}
-    main{max-width:1200px;margin:18px auto;padding:0 12px 36px;display:grid;gap:16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}
-    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px}
-    button{background:#254872;border:1px solid var(--border);color:#fff;border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer}
-    button.secondary{background:#1a2f50}
-    input[type=number]{width:90px;padding:6px;border-radius:8px;border:1px solid var(--border);background:#0b1426;color:#eaf2ff;font-size:14px;text-align:right}
-    table{width:100%;border-collapse:separate;border-spacing:0 6px}
-    th{font-size:12px;color:var(--muted);text-align:left;padding:4px 8px}
-    td{background:#0f182a;border:1px solid var(--border);padding:6px 8px;vertical-align:middle}
-    tr.group th{background:#12213a;color:#cfe6ff}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#152a49;color:#c8ddff;font-size:12px;margin-left:6px}
-    .right{display:flex;gap:6px;align-items:center;justify-content:flex-end}
-    .muted{color:var(--muted)}
-    .total{font-weight:800;color:var(--good)}
-    .danger{color:var(--bad)}
-    .file{display:none}
-    .split{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    .kpi{display:flex;gap:12px;flex-wrap:wrap}
-    .kpi .box{background:#0f182a;border:1px solid var(--border);padding:8px 10px;border-radius:10px}
-    .box .big{font:700 18px/1 var(--font,Inter);}
-    textarea{width:100%;min-height:120px;background:#0b1426;border:1px solid var(--border);border-radius:10px;color:var(--ink);padding:8px 10px}
-    .filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
-    select, input[type=text]{background:#0b1426;border:1px solid var(--border);border-radius:10px;color:var(--ink);padding:8px 10px}
-    .badge{display:inline-flex;align-items:center;gap:6px;background:#112345;border:1px solid var(--border);border-radius:999px;padding:4px 10px}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0b1220;color:#eaf2ff}
+    .banner{background:#0e2a4c;border-bottom:3px solid #8ad2ff;color:#fff;padding:10px;font-weight:800;border-radius:0 0 12px 12px}
+    .wrap{max-width:1240px;margin:18px auto;padding:0 12px 42px}
+    .card{background:#111a2b;border:1px solid #1f2a44;border-radius:14px;padding:12px;margin-bottom:12px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+    button{background:#2e4a78;color:#fff;border:1px solid #1f2a44;border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer}
+    button.secondary{background:#203453}
+    input[type=number]{width:86px;padding:6px;border-radius:8px;border:1px solid #1f2a44;background:#0b1426;color:#eaf2ff;font-size:14px}
+    pre{background:#0f182a;border:1px solid #1f2a44;padding:8px;border-radius:8px;max-height:260px;overflow:auto}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Delta Editor + Movement Ledger</h1>
-    <span class="tag">v2 — inline Δ + who-moved + vacancy ledger</span>
-    <span id="status" class="tag" style="margin-left:auto">Loading…</span>
-  </header>
-  <main>
-    <!-- ================= Delta Editor ================= -->
-    <section class="card" id="deltaCard">
-      <h2 style="margin:0 0 8px 0;color:#cfe6ff">Capacities Δ Editor</h2>
-      <div class="toolbar">
-        <button id="btnReload">Reload capacities.json</button>
-        <button id="btnReset" class="secondary">Reset Δ to file</button>
-        <button id="btnSaveLS" class="secondary">Save to browser</button>
-        <button id="btnLoadLS" class="secondary">Load from browser</button>
-        <button id="btnExport">Export updated capacities.json</button>
-        <input id="fileImport" class="file" type="file" accept="application/json" />
-        <button id="btnImport" class="secondary">Import JSON</button>
-      </div>
-      <div id="capTable"></div>
-      <div style="margin-top:10px" class="muted">Tip: CA posted vacancies usually come from Δ on the CA rows. FO Δ can be used for clean‑up/what‑ifs.</div>
-    </section>
-
-    <!-- ================= Movement & Vacancy Ledger ================= -->
-    <section class="card" id="ledgerCard">
-      <h2 style="margin:0 0 8px 0;color:#cfe6ff">Movement & Vacancy Ledger</h2>
-      <div class="split">
-        <div>
-          <div class="toolbar">
-            <input id="awardsFile" class="file" type="file" accept="application/json,text/csv" />
-            <button id="btnAwardsChoose" class="secondary">Import awards (JSON/CSV)</button>
-            <button id="btnAwardsSample">Load tiny sample</button>
-            <button id="btnAwardsClear" class="secondary">Clear</button>
-          </div>
-          <details style="margin:6px 0 10px 0"><summary class="muted">Accepted formats</summary>
-            <div class="muted" style="padding:6px 0 0">
-              <div>• <b>JSON</b>: <code>[{ "sen":2670, "name":"Smith, A", "fromBase":"SFO","fromSeat":"FO","toBase":"SEA","toSeat":"CA" }, …]</code></div>
-              <div>• <b>CSV</b> (headers required): <code>sen,name,fromBase,fromSeat,toBase,toSeat</code></div>
-            </div>
-          </details>
-          <div class="filterbar">
-            <label class="badge">Base <select id="fltBase"><option value="">All</option></select></label>
-            <label class="badge">Seat <select id="fltSeat"><option value="">All</option><option>CA</option><option>FO</option></select></label>
-            <label class="badge">Search <input id="fltSearch" type="text" placeholder="name or sen" /></label>
-            <span class="badge">Rows <span id="rowsCount" class="mono">0</span></span>
-          </div>
-          <div id="movesTable"></div>
-        </div>
-        <div>
-          <div class="kpi">
-            <div class="box"><div class="muted">Created vacancies</div><div id="kpiCreated" class="big mono">0</div></div>
-            <div class="box"><div class="muted">Filled vacancies</div><div id="kpiFilled" class="big mono">0</div></div>
-            <div class="box"><div class="muted">Open (net)</div><div id="kpiOpen" class="big mono">0</div></div>
-          </div>
-          <h3 style="margin:10px 0 6px 0">Vacancy ledger by seat</h3>
-          <div id="vacTable"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
+  <div class="banner">Base Trace v32 — Vacancy + Cascade + BPL Active</div>
+  <div class="wrap">
+    <div class="toolbar">
+      <button id="runBtn">Run (Vacancy → Cascade)</button>
+      <button id="resetBtn" class="secondary">Reset</button>
+      <span id="status"></span>
+    </div>
+    <div id="capTable" class="card"></div>
+    <div class="card">
+      <h3>Trace</h3>
+      <pre id="trace"></pre>
+    </div>
+  </div>
 <script>
-// === Config ===
-const CAP_PATH = './capacities.json'; // change to './data/capacities.json' if needed
-
-// === State ===
-let caps = []; // [{base, seat, startCapacity, delta}]
-let awards = []; // [{sen, name, fromBase, fromSeat, toBase, toSeat}]
-
-const $capTable = document.getElementById('capTable');
-const $movesTable = document.getElementById('movesTable');
-const $vacTable = document.getElementById('vacTable');
-const $status = document.getElementById('status');
-
-// === IO helpers ===
-async function fetchCaps(){
-  const r = await fetch(CAP_PATH + '?t=' + Date.now());
-  if (!r.ok) throw new Error('Failed to load capacities.json');
-  return r.json();
-}
-function saveToLS(){ localStorage.setItem('deltaEditor_caps', JSON.stringify(caps)); toast('Saved capacities to browser'); }
-function loadFromLS(){ const s = localStorage.getItem('deltaEditor_caps'); if (!s){ toast('No browser save found'); return; } caps = JSON.parse(s); renderCaps(); toast('Loaded capacities'); }
-function exportJSON(){
-  const blob = new Blob([JSON.stringify(caps, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href:url, download:'capacities.json' });
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-}
-function importJSON(file){
-  const fr = new FileReader();
-  fr.onload = () => { try { caps = JSON.parse(fr.result); renderCaps(); toast('Imported capacities'); } catch(e){ alert('Invalid JSON'); } };
-  fr.readAsText(file);
-}
-function toast(msg){ $status.textContent = msg; setTimeout(()=> $status.textContent = 'Ready', 1200); }
-
-// === CSV/JSON parsing for awards ===
-function parseCSV(text){
-  // tiny CSV parser for simple, comma-separated with quotes
-  const lines = text.trim().split(/
-?
-/);
-  const head = lines.shift().split(',').map(s=>s.trim());
-  const rows = [];
-  for(const ln of lines){
-    const cells = [];
-    let cur = '', inQ = false;
-    for(let i=0;i<ln.length;i++){
-      const ch = ln[i];
-      if(ch==='"'){ inQ = !inQ; continue; }
-      if(ch===',' && !inQ){ cells.push(cur); cur=''; } else { cur+=ch; }
-    }
-    cells.push(cur);
-    const obj = {};
-    head.forEach((h,i)=> obj[h] = (cells[i]||'').trim());
-    rows.push(obj);
-  }
-  return rows;
-}
-function normalizeAwards(a){
-  return a.map(r=>({
-    sen: Number(r.sen)||null,
-    name: r.name||r.Name||r.Pilot||'Unknown',
-    fromBase: String(r.fromBase||r.from||'').toUpperCase(),
-    fromSeat: String(r.fromSeat||r.from_seat||'').toUpperCase(),
-    toBase: String(r.toBase||r.to||'').toUpperCase(),
-    toSeat: String(r.toSeat||r.to_seat||'').toUpperCase(),
-  })).filter(r=> r.toBase && r.toSeat);
-}
-
-function loadAwardsFromFile(file){
-  const fr = new FileReader();
-  fr.onload = () => {
-    try{
-      let data;
-      if(file.type.includes('csv') || file.name.endsWith('.csv')){
-        data = parseCSV(fr.result);
-      } else {
-        data = JSON.parse(fr.result);
-      }
-      awards = normalizeAwards(data);
-      renderAwards();
-      toast('Awards loaded');
-    }catch(e){ console.error(e); alert('Could not parse awards file. Ensure headers: sen,name,fromBase,fromSeat,toBase,toSeat or valid JSON array.'); }
-  };
-  fr.readAsText(file);
-}
-
-// === Render: capacities ===
-function renderCaps(){
-  // group by base for readability
-  const byBase = caps.reduce((m,c)=>{ const b=c.base; (m[b]||(m[b]=[])).push(c); return m; },{});
-  const bases = Object.keys(byBase).sort();
-
-  let totalStart = 0, totalDelta = 0;
-  const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  thead.innerHTML = `<tr class="muted"><th>Base</th><th>Seat</th><th>Start Capacity</th><th>Δ (editable)</th><th class="right">Actions</th></tr>`;
-  table.appendChild(thead);
-  const tbody = document.createElement('tbody');
-
-  for(const b of bases){
-    const group = byBase[b].sort((a,z)=> a.seat.localeCompare(z.seat));
-    const trH = document.createElement('tr');
-    trH.className='group';
-    trH.innerHTML = `<th colspan="5">${b} <span class="pill">${group.length} seats</span></th>`;
-    tbody.appendChild(trH);
-
-    for(const row of group){
-      totalStart += Number(row.startCapacity)||0;
-      totalDelta += Number(row.delta)||0;
-      const tr = document.createElement('tr');
-      const id = `${row.base}__${row.seat}`;
-      tr.innerHTML = `
-        <td>${row.base}</td>
-        <td>${row.seat}</td>
-        <td class="mono">${row.startCapacity}</td>
-        <td>
-          <div class="right">
-            <button data-id="${id}" data-delta="-10" class="secondary">−10</button>
-            <button data-id="${id}" data-delta="-1" class="secondary">−1</button>
-            <input type="number" id="inp_${id}" value="${row.delta||0}" step="1" />
-            <button data-id="${id}" data-delta="1" class="secondary">+1</button>
-            <button data-id="${id}" data-delta="10" class="secondary">+10</button>
-          </div>
-        </td>
-        <td class="right">
-          <button data-id="${id}" data-setzero>Set 0</button>
-          <button data-id="${id}" data-copyca class="secondary">Copy CA Δ → FO</button>
-        </td>`;
-      tbody.appendChild(tr);
-    }
-  }
-
-  // totals row
-  const trT = document.createElement('tr');
-  trT.innerHTML = `<td colspan="2" class="right">Totals</td><td class="mono">${totalStart}</td><td class="total mono">${totalDelta >= 0 ? '+'+totalDelta : totalDelta}</td><td></td>`;
-  tbody.appendChild(trT);
-
-  table.appendChild(tbody);
-  $capTable.replaceChildren(table);
-
-  // wire inputs + buttons
-  $capTable.querySelectorAll('input[type=number]').forEach(inp=>{
-    inp.addEventListener('change', e=>{
-      const [base, seat] = inp.id.replace('inp_','').split('__');
-      const row = caps.find(r=> r.base===base && r.seat===seat);
-      row.delta = Number(inp.value||0);
-      renderCaps();
-    })
-  });
-  $capTable.querySelectorAll('button[data-delta]').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      const id = btn.getAttribute('data-id');
-      const [base, seat] = id.split('__');
-      const row = caps.find(r=> r.base===base && r.seat===seat);
-      row.delta = Number(row.delta||0) + Number(btn.getAttribute('data-delta'));
-      renderCaps();
-    })
-  });
-  $capTable.querySelectorAll('button[data-setzero]').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      const id = btn.getAttribute('data-id');
-      const [base, seat] = id.split('__');
-      const row = caps.find(r=> r.base===base && r.seat===seat);
-      row.delta = 0; renderCaps();
-    })
-  });
-  $capTable.querySelectorAll('button[data-copyca]').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      const id = btn.getAttribute('data-id');
-      const [base, seat] = id.split('__');
-      if (seat !== 'FO'){ toast('Copy CA → FO: click on an FO row'); return; }
-      const ca = caps.find(r=> r.base===base && r.seat==='CA');
-      const fo = caps.find(r=> r.base===base && r.seat==='FO');
-      if (ca && fo){ fo.delta = Number(ca.delta||0); renderCaps(); }
-    })
-  });
-}
-
-// === Render: awards/movements & vacancy ledger ===
-function renderAwards(){
-  // populate filters
-  const bases = Array.from(new Set([ ...awards.map(a=>a.fromBase), ...awards.map(a=>a.toBase) ].filter(Boolean))).sort();
-  const $fltBase = document.getElementById('fltBase');
-  $fltBase.innerHTML = '<option value="">All</option>' + bases.map(b=>`<option>${b}</option>`).join('');
-
-  const baseSel = $fltBase.value;
-  const seatSel = document.getElementById('fltSeat').value;
-  const q = (document.getElementById('fltSearch').value||'').toLowerCase();
-  const rows = awards.filter(a=> (!baseSel || a.fromBase===baseSel || a.toBase===baseSel)
-                                 && (!seatSel || a.fromSeat===seatSel || a.toSeat===seatSel)
-                                 && (!q || (String(a.sen||'').includes(q) || (a.name||'').toLowerCase().includes(q))));
-  document.getElementById('rowsCount').textContent = rows.length;
-
-  // Moves table
-  const tbl = document.createElement('table');
-  tbl.innerHTML = `<thead><tr class="muted"><th class="mono">SEN</th><th>Name</th><th>From</th><th>To</th></tr></thead>`;
-  const tb = document.createElement('tbody');
-  rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td class="mono">${r.sen??''}</td><td>${r.name}</td><td>${r.fromBase||''} ${r.fromSeat||''}</td><td><b>${r.toBase}</b> ${r.toSeat}</td>`;
-    tb.appendChild(tr);
-  });
-  tbl.appendChild(tb);
-  $movesTable.replaceChildren(tbl);
-
-  // Vacancy ledger
-  const ledger = buildVacancyLedger(awards);
-  const ledgerRows = Object.entries(ledger) // key: BASE|SEAT
-        .sort(([a],[b])=> a.localeCompare(b))
-        .flatMap(([key, list])=>{
-          const [base, seat] = key.split('|');
-          // summarize
-          const created = list.filter(x=> x.type==='created').length;
-          const filled = list.filter(x=> x.type==='filled').length;
-          return [{summary:true, base, seat, created, filled, open:created-filled}, ...list.map(x=>({summary:false, base, seat, ...x}))];
-        });
-
-  const vt = document.createElement('table');
-  const vtb = document.createElement('tbody');
-  vtb.appendChild(html(`<tr class="muted"><th>Base</th><th>Seat</th><th>Event</th><th>By</th><th>From → To</th></tr>`));
-  ledgerRows.forEach(r=>{
-    if (r.summary){
-      vtb.appendChild(html(`<tr class="group"><th colspan="5">${r.base} ${r.seat} <span class="pill">created ${r.created} · filled ${r.filled} · open <span class="mono">${r.open}</span></span></th></tr>`));
-    } else {
-      const tag = r.type==='created' ? '<span class="pill">created</span>' : '<span class="pill">filled</span>';
-      const who = r.name ? `${r.name}${r.sen?` <span class=\"mono\">(${r.sen})</span>`:''}` : '';
-      vtb.appendChild(html(`<tr><td>${r.base}</td><td>${r.seat}</td><td>${tag}</td><td>${who}</td><td>${r.desc||''}</td></tr>`));
-    }
-  });
-  vt.appendChild(vtb);
-  $vacTable.replaceChildren(vt);
-
-  // KPIs
-  const counts = Object.values(ledger).reduce((m, arr)=>{
-    for(const e of arr){ m[e.type]=(m[e.type]||0)+1; } return m; }, {});
-  const created = counts.created||0, filled = counts.filled||0;
-  document.getElementById('kpiCreated').textContent = created;
-  document.getElementById('kpiFilled').textContent = filled;
-  document.getElementById('kpiOpen').textContent = created - filled;
-}
-
-function buildVacancyLedger(moves){
-  // A move creates a vacancy at the origin seat and fills a vacancy at the destination seat.
-  // We record both events under their BASE|SEAT buckets.
-  const led = {};
-  function push(base, seat, e){ const k = `${base}|${seat}`; (led[k]||(led[k]=[])).push(e); }
-  moves.forEach(m=>{
-    if (m.fromBase && m.fromSeat){
-      push(m.fromBase, m.fromSeat, { type:'created', name:m.name, sen:m.sen, desc:`left ${m.fromBase} ${m.fromSeat} → ${m.toBase} ${m.toSeat}` });
-    }
-    if (m.toBase && m.toSeat){
-      push(m.toBase, m.toSeat, { type:'filled', name:m.name, sen:m.sen, desc:`arrived from ${m.fromBase||'—'} ${m.fromSeat||''} → ${m.toBase} ${m.toSeat}` });
-    }
-  });
-  return led;
-}
-
-function html(str){ const t=document.createElement('template'); t.innerHTML=str.trim(); return t.content.firstChild; }
-
-// === Boot ===
+// === load data ===
+async function loadJSON(f){const r=await fetch(f+"?t="+Date.now());if(!r.ok)throw new Error("load fail "+f);return r.json();}
+let capacities=[], roster=[], prefs={};
 async function boot(){
-  try{
-    caps = await fetchCaps();
-    // normalize keys for safety
-    caps = caps.map(r=>({ base:String(r.base).toUpperCase(), seat:String(r.seat).toUpperCase(), startCapacity:Number(r.startCapacity)||0, delta:Number(r.delta)||0 }));
-    renderCaps();
-    toast('Ready');
-  }catch(e){ $status.textContent = 'Error loading capacities.json'; console.error(e); }
+  capacities=await loadJSON("capacities.json");
+  roster=await loadJSON("roster.json");
+  const pf=await loadJSON("preferences.json");
+  pf.forEach(p=>prefs[p.sen]=p);
+  renderCap(); document.getElementById('status').textContent="Loaded.";
 }
-
-// === Toolbar actions ===
- document.getElementById('btnReload').onclick = boot;
- document.getElementById('btnReset').onclick = boot;
- document.getElementById('btnSaveLS').onclick = saveToLS;
- document.getElementById('btnLoadLS').onclick = loadFromLS;
- document.getElementById('btnExport').onclick = exportJSON;
- document.getElementById('btnImport').onclick = () => document.getElementById('fileImport').click();
- document.getElementById('fileImport').addEventListener('change', (e)=>{ if(e.target.files[0]) importJSON(e.target.files[0]); });
-
- // awards toolbar
- document.getElementById('btnAwardsChoose').onclick = ()=> document.getElementById('awardsFile').click();
- document.getElementById('awardsFile').addEventListener('change', (e)=>{ if(e.target.files[0]) loadAwardsFromFile(e.target.files[0]); });
- document.getElementById('btnAwardsClear').onclick = ()=>{ awards=[]; renderAwards(); };
- document.getElementById('btnAwardsSample').onclick = ()=>{
-   const sample = [
-     {sen: 2670, name:'Martin, C', fromBase:'SFO', fromSeat:'FO', toBase:'SEA', toSeat:'CA'},
-     {sen: 1830, name:'Nguyen, T', fromBase:'SEA', fromSeat:'FO', toBase:'SEA', toSeat:'CA'},
-     {sen: 3120, name:'Romo, A', fromBase:'PDX', fromSeat:'FO', toBase:'SFO', toSeat:'FO'},
-     {sen: 4100, name:'Khan, J', fromBase:'SEA', fromSeat:'CA', toBase:'SFO', toSeat:'CA'},
-   ];
-   awards = normalizeAwards(sample);
-   renderAwards();
- };
-
- // filters wiring
- document.getElementById('fltBase').addEventListener('change', renderAwards);
- document.getElementById('fltSeat').addEventListener('change', renderAwards);
- document.getElementById('fltSearch').addEventListener('input', renderAwards);
-
+function renderCap(){
+  const t=document.createElement('table');
+  t.innerHTML='<tr><th>Base</th><th>Seat</th><th>StartCap</th><th>Δ</th></tr>'+
+    capacities.map(c=>`<tr><td>${c.base}</td><td>${c.seat}</td><td>${c.startCapacity}</td><td>${c.delta}</td></tr>`).join("");
+  document.getElementById('capTable').innerHTML=''; document.getElementById('capTable').appendChild(t);
+}
+// === core bid logic skeleton ===
+let Occupants=new Map();
+function initOcc(){Occupants.clear();capacities.forEach(c=>{Occupants.set(c.base+"__"+c.seat,new Set());});roster.forEach(p=>{const k=p.current.base+"__"+p.current.seat;if(!Occupants.has(k))Occupants.set(k,new Set());Occupants.get(k).add(p.sen);});}
+function bplSatisfied(p,toKey,toBase,toSeat){
+  const entry=(prefs[p.sen]?.preferences||[]).find(x=>x.base===toBase&&x.seat===toSeat);
+  const limit=entry?.bpl_min;
+  if(limit==null)return {ok:true,reason:null};
+  const occ=Occupants.get(toKey)||new Set();
+  const rank=[...occ].filter(s=>s<p.sen).length+1;
+  if(rank>limit)return {ok:false,reason:`Projected rank ${rank} > BPL ${limit}`};
+  return {ok:true,reason:null};
+}
+function run(){
+  initOcc();
+  const trace=document.getElementById('trace');trace.textContent='';
+  for(const p of roster){
+    const pref=(prefs[p.sen]?.preferences||[]);
+    for(const w of pref){
+      const toKey=w.base+'__'+w.seat;
+      const chk=bplSatisfied(p,toKey,w.base,w.seat);
+      trace.textContent+=`Pilot ${p.name} bidding ${w.base} ${w.seat}: `+(chk.ok?'OK':'BLOCKED '+chk.reason)+'\n';
+    }
+  }
+}
+document.getElementById('runBtn').onclick=run;
+document.getElementById('resetBtn').onclick=boot;
 boot();
 </script>
-</body>
-</html>
+</body></html>
