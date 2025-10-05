@@ -201,15 +201,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
 // ===== BPL enforcement — reads each pilot's own bpl_min from preferences.json =====
 function bplSatisfied(p, w, toK) {
   // Find the pilot’s own preference entry for the target base/seat
-  const prefList = prefs[p.id]?.preferences || prefs[p.sen]?.preferences || [];
+  const prefList = prefs[p.sen]?.preferences || [];
   const match = prefList.find(x =>
     String(x.base).toUpperCase() === String(w.base).toUpperCase() &&
     String(x.seat).toUpperCase() === String(w.seat).toUpperCase()
   );
-
-  // No BPL declared → unrestricted
-  const limit = match?.bpl_min;
-  if (limit == null) return { ok: true, reason: null };
+  // No BPL declared or bpl_min = 0 → unrestricted
+  const limit = Number(match?.bpl_min ?? 0);
+  if (!limit || limit <= 0) return { ok: true, reason: null };
 
   // Compute projected position among current occupants
   const occ = Occupants.get(toK) || new Set();
@@ -221,7 +220,6 @@ function bplSatisfied(p, w, toK) {
   }
   return { ok: true, reason: null };
 }
-
 // ===== UI: capacities table =====
 function groupByBase(){
   const bases = {};
@@ -457,5 +455,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
