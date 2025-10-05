@@ -67202,6 +67202,7 @@
       "equip": "73G",
       "base": "SFO",
       "seat": "FO"
+      "paper": true
     },
     "preferences": [
       {
@@ -67503,6 +67504,7 @@
       "equip": "73G",
       "base": "SFO",
       "seat": "FO"
+      "paper": true
     },
     "preferences": [
       {
