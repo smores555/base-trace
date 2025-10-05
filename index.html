@@ -198,31 +198,33 @@ function logTrace(msg){
 window.addEventListener('DOMContentLoaded', ()=>{
   const btnTC = document.getElementById('traceClear'); if(btnTC){ btnTC.onclick = ()=>{ const box=document.getElementById('traceLog'); if(box) box.textContent=''; }; }
 });
-// ===== BPL enforcement — reads each pilot's own bpl_min from preferences.json =====
+// ===== BPL enforcement — uses your existing prefEntryFor(p) resolver =====
 function bplSatisfied(p, w, toK) {
-  // Find the pilot’s own preference entry for the target base/seat
-const prefList = 
-  prefs["pil" + String(p.sen)]?.preferences ||
-  prefs[String(p.sen)]?.preferences ||
-  [];
+  // 1) Grab this pilot's full preference object using your resolver
+  const pe = prefEntryFor(p);
+  const prefList = (pe && Array.isArray(pe.preferences)) ? pe.preferences : [];
+
+  // 2) Find the specific preference row for the target base/seat
   const match = prefList.find(x =>
     String(x.base).toUpperCase() === String(w.base).toUpperCase() &&
     String(x.seat).toUpperCase() === String(w.seat).toUpperCase()
   );
-  // No BPL declared or bpl_min = 0 → unrestricted
-  const limit = Number(match?.bpl_min ?? 0);
-  if (!limit || limit <= 0) return { ok: true, reason: null };
 
-  // Compute projected position among current occupants
+  // 3) No BPL or BPL=0 means unrestricted
+  const limit = Number(match?.bpl_min ?? 0);
+  if (!(limit > 0)) return { ok: true, reason: null };
+
+  // 4) Compute projected rank in destination seat
   const occ = Occupants.get(toK) || new Set();
   const projectedRank = [...occ].filter(sen => sen < p.sen).length + 1;
 
-  // Enforce BPL limit
+  // 5) Enforce
   if (projectedRank > limit) {
-    return { ok: false, reason: `Projected rank ${projectedRank} exceeds BPL ${limit}` };
+    return { ok:false, reason:`Projected rank ${projectedRank} exceeds BPL ${limit}` };
   }
-  return { ok: true, reason: null };
+  return { ok:true, reason:null };
 }
+
 // ===== UI: capacities table =====
 function groupByBase(){
   const bases = {};
@@ -458,6 +460,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
