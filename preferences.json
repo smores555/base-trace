@@ -60729,6 +60729,8 @@
       "equip": "73G",
       "base": "SEA",
       "seat": "FO"
+      "paper": true
+
     },
     "preferences": [
       {
