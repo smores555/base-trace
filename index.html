@@ -201,7 +201,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
 // ===== BPL enforcement — reads each pilot's own bpl_min from preferences.json =====
 function bplSatisfied(p, w, toK) {
   // Find the pilot’s own preference entry for the target base/seat
-const prefList = prefs[String(p.sen)]?.preferences || [];
+const prefList = 
+  prefs["pil" + String(p.sen)]?.preferences ||
+  prefs[String(p.sen)]?.preferences ||
+  [];
   const match = prefList.find(x =>
     String(x.base).toUpperCase() === String(w.base).toUpperCase() &&
     String(x.seat).toUpperCase() === String(w.seat).toUpperCase()
@@ -455,6 +458,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
