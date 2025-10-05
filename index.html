@@ -198,9 +198,29 @@ function logTrace(msg){
 window.addEventListener('DOMContentLoaded', ()=>{
   const btnTC = document.getElementById('traceClear'); if(btnTC){ btnTC.onclick = ()=>{ const box=document.getElementById('traceLog'); if(box) box.textContent=''; }; }
 });
+// ===== BPL enforcement — reads each pilot's own bpl_min from preferences.json =====
+function bplSatisfied(p, w, toK) {
+  // Find the pilot’s own preference entry for the target base/seat
+  const prefList = prefs[p.id]?.preferences || prefs[p.sen]?.preferences || [];
+  const match = prefList.find(x =>
+    String(x.base).toUpperCase() === String(w.base).toUpperCase() &&
+    String(x.seat).toUpperCase() === String(w.seat).toUpperCase()
+  );
 
-// ===== BPL (optional) — stub always OK for now =====
-function bplSatisfied(p, w, toK){ return { ok:true, reason:null }; }
+  // No BPL declared → unrestricted
+  const limit = match?.bpl_min;
+  if (limit == null) return { ok: true, reason: null };
+
+  // Compute projected position among current occupants
+  const occ = Occupants.get(toK) || new Set();
+  const projectedRank = [...occ].filter(sen => sen < p.sen).length + 1;
+
+  // Enforce BPL limit
+  if (projectedRank > limit) {
+    return { ok: false, reason: `Projected rank ${projectedRank} exceeds BPL ${limit}` };
+  }
+  return { ok: true, reason: null };
+}
 
 // ===== UI: capacities table =====
 function groupByBase(){
@@ -437,4 +457,5 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
