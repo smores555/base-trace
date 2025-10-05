@@ -405,8 +405,13 @@ function run(){
         state.pass++;
         const rows=[];
         award(p, fromK, toK, 'posted-add', rows);
-        vacDec(toK,1);                // consume posted add
-        vacInc(fromK,1);              // create FO/CA vacancy where they left (enable cascade immediately)
+      // Adjust vacancies depending on paper status
+if (!p.paper) {
+  vacDec(toK, 1); // normal move: consume a seat at destination
+} else {
+  if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not consume capacity`);
+}
+vacInc(fromK, 1); // always open a seat where they left
         renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
         awarded = true;
         continue VacFirst;            // restart from Pilot #1
@@ -476,6 +481,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
