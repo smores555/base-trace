@@ -67422,7 +67422,7 @@
     "name": "YOUNG, ELIZABETH",
     "current": {
       "equip": "73G",
-      "base": "SEA",
+      "base": "SFO",
       "seat": "FO"
     },
     "preferences": [
@@ -67430,7 +67430,7 @@
         "order": 1,
         "stay": false,
         "equip": "73G",
-        "base": "SFO",
+        "base": "SEA",
         "seat": "FO",
         "bpl_min": 0
       }
