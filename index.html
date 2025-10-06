@@ -34,6 +34,21 @@
   </style>
 </head>
 <body>
+    <!-- Simple password gate -->
+  <script>
+  const correct = "12";
+  let entered = sessionStorage.getItem("pwok");
+  if (!entered) {
+    const p = prompt("Enter site password:");
+    if (p === correct) {
+      sessionStorage.setItem("pwok", "true");
+    } else {
+      document.write("<h2 style='font-family:sans-serif;color:#ccc;text-align:center;margin-top:40vh;'>Access denied</h2>");
+      throw new Error("Unauthorized");
+    }
+  }
+  </script>
+  <!-- now your banners/toolbars appear here -->
   <div class="banner">Base Trace v31 — Vacancy‑ledger, Restart‑every‑award, Improve‑only, Lock at #1 — Updated now</div>
   <div class="wrap">
     <div class="card">
@@ -460,6 +475,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
