@@ -60963,6 +60963,7 @@
       "base": "SEA",
       "seat": "FO"
     },
+    "paper": true,
     "preferences": [
       {
         "order": 1,
@@ -67201,6 +67202,7 @@
       "base": "SFO",
       "seat": "FO"
     },
+    "paper": true,
     "preferences": [
       {
         "order": 1,
@@ -67417,7 +67419,7 @@
   },
   "pil3347": {
     "sen": 3347,
-    "name": "NO BID YOUNG, ELIZABETH",
+    "name": "YOUNG, ELIZABETH",
     "current": {
       "equip": "73G",
       "base": "SFO",
@@ -67428,7 +67430,7 @@
         "order": 1,
         "stay": false,
         "equip": "73G",
-        "base": "SEA",
+        "base": "SFO",
         "seat": "FO",
         "bpl_min": 0
       }
@@ -67502,6 +67504,7 @@
       "base": "SFO",
       "seat": "FO"
     },
+    "paper": true,
     "preferences": [
       {
         "order": 1,
