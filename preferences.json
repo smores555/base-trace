@@ -5262,25 +5262,6 @@
       }
     ]
   },
-  "pil0282": {
-    "sen": 282,
-    "name": "ROGELSTAD, DAVID",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0283": {
     "sen": 283,
     "name": "RICE, DANA J.",
@@ -6608,25 +6589,6 @@
       }
     ]
   },
-  "pil0353": {
-    "sen": 353,
-    "name": "WHITE, THOMAS",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0354": {
     "sen": 354,
     "name": "SEYMOUR, KAYL T.",
@@ -7330,25 +7292,6 @@
       }
     ]
   },
-  "pil0393": {
-    "sen": 393,
-    "name": "MOLZBERGER, VICTOR",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0394": {
     "sen": 394,
     "name": "DUPLAIN, RICHARD A.",
@@ -7611,25 +7554,6 @@
         "equip": "73G",
         "base": "PDX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil0408": {
-    "sen": 408,
-    "name": "HOFFMAN, PATTI",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -9048,25 +8972,6 @@
       }
     ]
   },
-  "pil0484": {
-    "sen": 484,
-    "name": "NEEDHAM, JAMES",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0485": {
     "sen": 485,
     "name": "WOLFE, RONALD E.",
@@ -10025,25 +9930,6 @@
       }
     ]
   },
-  "pil0535": {
-    "sen": 535,
-    "name": "DIXON, RYAN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0536": {
     "sen": 536,
     "name": "HARGIS, BEN",
@@ -10459,25 +10345,6 @@
       }
     ]
   },
-  "pil0557": {
-    "sen": 557,
-    "name": "FOUCH, AARON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0558": {
     "sen": 558,
     "name": "MARKSTALLER, MICHAEL G.",
@@ -10683,25 +10550,6 @@
         "equip": "73G",
         "base": "LAX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil0569": {
-    "sen": 569,
-    "name": "BRITTINGHAM, MARK",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -11846,25 +11694,6 @@
       }
     ]
   },
-  "pil0630": {
-    "sen": 630,
-    "name": "ELKINGTON, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0631": {
     "sen": 631,
     "name": "SKIBINSKI, GERARD M.",
@@ -13001,25 +12830,6 @@
         "equip": "73G",
         "base": "SEA",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil0691": {
-    "sen": 691,
-    "name": "ROCKEFELLER, JASON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -14696,25 +14506,6 @@
       }
     ]
   },
-  "pil0781": {
-    "sen": 781,
-    "name": "SOKAL, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0782": {
     "sen": 782,
     "name": "DIETRICH, JULIE A.",
@@ -16178,25 +15969,6 @@
       }
     ]
   },
-  "pil0859": {
-    "sen": 859,
-    "name": "BULLARD, BRIAN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0860": {
     "sen": 860,
     "name": "SJOBLOM, SHAWN",
@@ -16558,25 +16330,6 @@
       }
     ]
   },
-  "pil0879": {
-    "sen": 879,
-    "name": "HERMAN, DOUGLAS",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil0880": {
     "sen": 880,
     "name": "FARLEY, MICHAEL",
@@ -16744,25 +16497,6 @@
         "equip": "73G",
         "base": "LAX",
         "seat": "FO",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil0889": {
-    "sen": 889,
-    "name": "KOHN, PAUL",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -19203,25 +18937,6 @@
       }
     ]
   },
-  "pil1015": {
-    "sen": 1015,
-    "name": "HARRILL, EDWARD",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil1016": {
     "sen": 1016,
     "name": "FAULKNER, MICHAEL",
@@ -19446,25 +19161,6 @@
         "equip": "73G",
         "base": "LAX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil1028": {
-    "sen": 1028,
-    "name": "RYAN, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -19731,25 +19427,6 @@
         "equip": "73G",
         "base": "SEA",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil1043": {
-    "sen": 1043,
-    "name": "WALSH, ADAM",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -20400,25 +20077,6 @@
       }
     ]
   },
-  "pil1078": {
-    "sen": 1078,
-    "name": "BERINGER, DENISE",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil1079": {
     "sen": 1079,
     "name": "OGDEN, DALE",
@@ -20887,25 +20545,6 @@
         "equip": "73G",
         "base": "PDX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil1103": {
-    "sen": 1103,
-    "name": "SCHMID, MARK",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -22021,25 +21660,6 @@
         "equip": "73G",
         "base": "PDX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil1161": {
-    "sen": 1161,
-    "name": "TIDWELL, PHILLIP",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -24976,25 +24596,6 @@
         "equip": "73G",
         "base": "PDX",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil1314": {
-    "sen": 1314,
-    "name": "KANNING, BRANDON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]
@@ -37886,25 +37487,6 @@
       }
     ]
   },
-  "pil1969": {
-    "sen": 1969,
-    "name": "ZELLER, JUSTIN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
-        "bpl_min": 0
-      }
-    ]
-  },
   "pil1970": {
     "sen": 1970,
     "name": "DAVIS, MATTHEW",
@@ -41385,25 +40967,6 @@
         "equip": "73G",
         "base": "SFO",
         "seat": "CA",
-        "bpl_min": 0
-      }
-    ]
-  },
-  "pil2134": {
-    "sen": 2134,
-    "name": "FAIRCHILD, WEST",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    },
-    "preferences": [
-      {
-        "order": 1,
-        "stay": false,
-        "equip": "73G",
-        "base": "",
-        "seat": "",
         "bpl_min": 0
       }
     ]

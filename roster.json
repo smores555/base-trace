@@ -2769,16 +2769,6 @@
       "seat": "CA"
     }
   },
-  "pil0282": {
-    "id": "pil0282",
-    "sen": 282,
-    "name": "ROGELSTAD, DAVID",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0283": {
     "id": "pil0283",
     "sen": 283,
@@ -3469,16 +3459,6 @@
       "seat": "CA"
     }
   },
-  "pil0353": {
-    "id": "pil0353",
-    "sen": 353,
-    "name": "WHITE, THOMAS",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0354": {
     "id": "pil0354",
     "sen": 354,
@@ -3849,16 +3829,6 @@
       "seat": "CA"
     }
   },
-  "pil0393": {
-    "id": "pil0393",
-    "sen": 393,
-    "name": "MOLZBERGER, VICTOR",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0394": {
     "id": "pil0394",
     "sen": 394,
@@ -3997,16 +3967,6 @@
       "equip": "73G",
       "base": "PDX",
       "seat": "CA"
-    }
-  },
-  "pil0408": {
-    "id": "pil0408",
-    "sen": 408,
-    "name": "HOFFMAN, PATTI",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil0409": {
@@ -4749,16 +4709,6 @@
       "seat": "CA"
     }
   },
-  "pil0484": {
-    "id": "pil0484",
-    "sen": 484,
-    "name": "NEEDHAM, JAMES",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0485": {
     "id": "pil0485",
     "sen": 485,
@@ -5259,16 +5209,6 @@
       "seat": "CA"
     }
   },
-  "pil0535": {
-    "id": "pil0535",
-    "sen": 535,
-    "name": "DIXON, RYAN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0536": {
     "id": "pil0536",
     "sen": 536,
@@ -5479,16 +5419,6 @@
       "seat": "CA"
     }
   },
-  "pil0557": {
-    "id": "pil0557",
-    "sen": 557,
-    "name": "FOUCH, AARON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0558": {
     "id": "pil0558",
     "sen": 558,
@@ -5597,16 +5527,6 @@
       "equip": "73G",
       "base": "LAX",
       "seat": "CA"
-    }
-  },
-  "pil0569": {
-    "id": "pil0569",
-    "sen": 569,
-    "name": "BRITTINGHAM, MARK",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil0570": {
@@ -6209,16 +6129,6 @@
       "seat": "CA"
     }
   },
-  "pil0630": {
-    "id": "pil0630",
-    "sen": 630,
-    "name": "ELKINGTON, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0631": {
     "id": "pil0631",
     "sen": 631,
@@ -6817,16 +6727,6 @@
       "equip": "73G",
       "base": "SEA",
       "seat": "CA"
-    }
-  },
-  "pil0691": {
-    "id": "pil0691",
-    "sen": 691,
-    "name": "ROCKEFELLER, JASON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil0692": {
@@ -7709,16 +7609,6 @@
       "seat": "CA"
     }
   },
-  "pil0781": {
-    "id": "pil0781",
-    "sen": 781,
-    "name": "SOKAL, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0782": {
     "id": "pil0782",
     "sen": 782,
@@ -8489,16 +8379,6 @@
       "seat": "CA"
     }
   },
-  "pil0859": {
-    "id": "pil0859",
-    "sen": 859,
-    "name": "BULLARD, BRIAN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0860": {
     "id": "pil0860",
     "sen": 860,
@@ -8689,16 +8569,6 @@
       "seat": "CA"
     }
   },
-  "pil0879": {
-    "id": "pil0879",
-    "sen": 879,
-    "name": "HERMAN, DOUGLAS",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil0880": {
     "id": "pil0880",
     "sen": 880,
@@ -8787,16 +8657,6 @@
       "equip": "73G",
       "base": "LAX",
       "seat": "FO"
-    }
-  },
-  "pil0889": {
-    "id": "pil0889",
-    "sen": 889,
-    "name": "KOHN, PAUL",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil0890": {
@@ -10039,16 +9899,6 @@
       "seat": "CA"
     }
   },
-  "pil1015": {
-    "id": "pil1015",
-    "sen": 1015,
-    "name": "HARRILL, EDWARD",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil1016": {
     "id": "pil1016",
     "sen": 1016,
@@ -10167,16 +10017,6 @@
       "equip": "73G",
       "base": "LAX",
       "seat": "CA"
-    }
-  },
-  "pil1028": {
-    "id": "pil1028",
-    "sen": 1028,
-    "name": "RYAN, JOHN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil1029": {
@@ -10317,16 +10157,6 @@
       "equip": "73G",
       "base": "SEA",
       "seat": "CA"
-    }
-  },
-  "pil1043": {
-    "id": "pil1043",
-    "sen": 1043,
-    "name": "WALSH, ADAM",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil1044": {
@@ -10669,16 +10499,6 @@
       "seat": "CA"
     }
   },
-  "pil1078": {
-    "id": "pil1078",
-    "sen": 1078,
-    "name": "BERINGER, DENISE",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil1079": {
     "id": "pil1079",
     "sen": 1079,
@@ -10917,16 +10737,6 @@
       "equip": "73G",
       "base": "PDX",
       "seat": "CA"
-    }
-  },
-  "pil1103": {
-    "id": "pil1103",
-    "sen": 1103,
-    "name": "SCHMID, MARK",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil1104": {
@@ -11497,16 +11307,6 @@
       "equip": "73G",
       "base": "PDX",
       "seat": "CA"
-    }
-  },
-  "pil1161": {
-    "id": "pil1161",
-    "sen": 1161,
-    "name": "TIDWELL, PHILLIP",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil1162": {
@@ -13027,16 +12827,6 @@
       "equip": "73G",
       "base": "PDX",
       "seat": "CA"
-    }
-  },
-  "pil1314": {
-    "id": "pil1314",
-    "sen": 1314,
-    "name": "KANNING, BRANDON",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil1315": {
@@ -19569,16 +19359,6 @@
       "seat": "CA"
     }
   },
-  "pil1969": {
-    "id": "pil1969",
-    "sen": 1969,
-    "name": "ZELLER, JUSTIN",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
-    }
-  },
   "pil1970": {
     "id": "pil1970",
     "sen": 1970,
@@ -21217,16 +20997,6 @@
       "equip": "73G",
       "base": "SFO",
       "seat": "CA"
-    }
-  },
-  "pil2134": {
-    "id": "pil2134",
-    "sen": 2134,
-    "name": "FAIRCHILD, WEST",
-    "current": {
-      "equip": "73G",
-      "base": "",
-      "seat": ""
     }
   },
   "pil2135": {
