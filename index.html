@@ -286,22 +286,42 @@ function renderNamesBySeniority(){
   html += '</ol>';
   slot.innerHTML = html;
 }
-
 // ===== Load JSON (with fallback) =====
 async function loadJSON(){
-  function sf(p){ return fetch(p, {cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null); }
- const loaded = {
-  capacities: (await sf('capacities.json')) ?? (await sf('data/capacities.json')),
-  roster:     (await sf('roster.json'))     ?? (await sf('data/roster.json')),
-  prefs:      (await sf('preferences.json'))?? (await sf('data/preferences.json'))
-};
+  function sf(p){
+    return fetch(p, {cache:'no-cache'})
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null);
+  }
+
+  const loaded = {
+    capacities: (await sf('capacities.json')) ?? (await sf('data/capacities.json')),
+    roster:     (await sf('roster.json'))     ?? (await sf('data/roster.json')),
+    prefs:      (await sf('preferences.json'))?? (await sf('data/preferences.json'))
   };
+
   if(!loaded.capacities || !loaded.roster || !loaded.prefs){
     // demo fallback so page still works if files are missing
-    loaded.capacities = BASES.flatMap(b=>SEATS.map(s=>({base:b, seat:s, startCapacity: (s==='CA'? 50:100), delta:0})));
-    loaded.roster = Array.from({length:50}, (_,i)=>({ sen:i+1, name:`Pilot ${i+1}`, current:{base: BASES[i%BASES.length], seat: (i%3===0?'CA':'FO')} }));
+    loaded.capacities = BASES.flatMap(b=>SEATS.map(s=>({
+      base:b, seat:s, startCapacity:(s==='CA'?50:100), delta:0
+    })));
+    loaded.roster = Array.from({length:50}, (_,i)=>({
+      sen:i+1,
+      name:`Pilot ${i+1}`,
+      current:{
+        base:BASES[i%BASES.length],
+        seat:(i%3===0?'CA':'FO')
+      }
+    }));
     loaded.prefs = {};
-    for(const p of loaded.roster){ loaded.prefs[p.sen] = { preferences: [{order:1, base:p.current.base, seat:p.current.seat},{order:2, base:'SEA', seat:'CA'}] }; }
+    for(const p of loaded.roster){
+      loaded.prefs[p.sen] = {
+        preferences:[
+          {order:1, base:p.current.base, seat:p.current.seat},
+          {order:2, base:'SEA', seat:'CA'}
+        ]
+      };
+    }
     $status.textContent = "Demo data active (capacities/roster/prefs not found)";
   } else {
     $status.textContent = "Loaded JSON.";
@@ -309,7 +329,8 @@ async function loadJSON(){
 
   capMap.clear();
   for(const c of loaded.capacities){
-    const b = String(c.base||'').toUpperCase(), s = String(c.seat||'').toUpperCase();
+    const b = String(c.base||'').toUpperCase();
+    const s = String(c.seat||'').toUpperCase();
     const start = Number(c.startCapacity||c.start||0);
     const delta = Number(c.delta||0);
     capMap.set(key(b,s), { base:b, seat:s, start, delta });
@@ -321,13 +342,12 @@ async function loadJSON(){
       base:String(x.current.base||'').toUpperCase(),
       seat:String(x.current.seat||'').toUpperCase()
     },
-    paper:Boolean(x.paper) // roster-level flag (optional)
+    paper:Boolean(x.paper)
   }));
 
   prefs = loaded.prefs;
   renderCapTable();
-});
-}
+} 
 // ===== Rank helpers (Improve-only + Lock at #1) =====
 function prefRank(p, base, seat){
   const list = rankPrefs(p);
@@ -476,5 +496,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
