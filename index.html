@@ -290,10 +290,11 @@ function renderNamesBySeniority(){
 // ===== Load JSON (with fallback) =====
 async function loadJSON(){
   function sf(p){ return fetch(p, {cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null); }
-  const loaded = {
-    capacities: await (sf('capacities.json') || sf('data/capacities.json')),
-    roster:     await (sf('roster.json')     || sf('data/roster.json')),
-    prefs:      await (sf('preferences.json')|| sf('data/preferences.json'))
+ const loaded = {
+  capacities: (await sf('capacities.json')) ?? (await sf('data/capacities.json')),
+  roster:     (await sf('roster.json'))     ?? (await sf('data/roster.json')),
+  prefs:      (await sf('preferences.json'))?? (await sf('data/preferences.json'))
+};
   };
   if(!loaded.capacities || !loaded.roster || !loaded.prefs){
     // demo fallback so page still works if files are missing
@@ -475,3 +476,4 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
