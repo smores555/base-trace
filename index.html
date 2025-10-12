@@ -429,30 +429,60 @@ function run(){
       if (pinned.has(p.sen)) continue;
       const fromK = key(p.current.base, p.current.seat);
       const list = rankPrefs(p);
-      for (const w of list){
-        if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) break; // stop-after-home
-        const toK = key(w.base,w.seat);
-        const have = vacAmt(toK);
-        if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`);
-        if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
-        const rNow = bestRank.get(p.sen) ?? Infinity;
-        const rWish = prefRank(p, w.base, w.seat);
-        if (rWish >= rNow){ if (pilotMatchesTrace(p)) logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`); continue; }
-        const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
+      for (const w of list) {
+  // --- Modified stop-after-home with BPL awareness ---
+  if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) {
+    // Only stop if the pilot can actually hold home within their BPL
+    const homeBpl = bplSatisfied(p, w, key(w.base, w.seat));
+    if (homeBpl.ok) break;   // they can hold home → stop checking further
+    else continue;           // fails BPL → skip home and keep checking next prefs
+  }
 
-        // AWARD (Cascade)
-        state.pass++;
-        const rows=[];
-        award(p, fromK, toK, 'cascade', rows);
+  const toK = key(w.base, w.seat);
+  const have = vacAmt(toK);
+  if (pilotMatchesTrace(p))
+    logTrace(`[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`);
 
-        if (!isPaper(p)) { vacDec(toK,1); }
-        else { if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not consume capacity`); }
-        vacInc(fromK,1);
+  if (have <= 0) {
+    if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy');
+    continue;
+  }
 
-        renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
-        awarded = true;
-        continue Cascade; // restart from #1
-      }
+  const rNow = bestRank.get(p.sen) ?? Infinity;
+  const rWish = prefRank(p, w.base, w.seat);
+  if (rWish >= rNow) {
+    if (pilotMatchesTrace(p))
+      logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`);
+    continue;
+  }
+
+  const bpl = bplSatisfied(p, w, toK);
+  if (!bpl.ok) {
+    if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL');
+    continue;
+  }
+
+  // --- AWARD (Cascade) ---
+  state.pass++;
+  const rows = [];
+  award(p, fromK, toK, 'cascade', rows);
+
+  // Update vacancies and occupant maps
+  if (!isPaper(p)) {
+    vacDec(toK, 1);
+  } else if (pilotMatchesTrace(p)) {
+    logTrace(`  PAPER BID: ${p.sen} move does not consume capacity`);
+  }
+  vacInc(fromK, 1);
+
+  // Update UI
+  renderLedgerRows(rows);
+  renderOpen();
+  renderNamesBySeniority();
+
+  awarded = true;
+  continue Cascade; // restart from #1 after each award
+}
     }
     if (!awarded) break;
   }
@@ -484,6 +514,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
