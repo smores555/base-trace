@@ -403,38 +403,40 @@ function run(){
     bestRank.set(p.sen, r0);
     if (r0 === 1) pinned.add(p.sen);
   }
-// ===== Pre-pass BPL lock for same-seat lines =====
-// Checks if a pilot’s own-base/seat BPL is satisfied before running the bid.
-// If their BPL is met -> pin them (they stay put).
-// If not met -> mark that "stay" pref so they can move out.
+// ===== Pre-pass BPL lock (only pin if BPL met *and* at #1 pref) =====
 for (const p of sorted) {
   const homeK = key(p.current.base, p.current.seat);
   const pe = prefEntryFor(p);
   if (!pe) continue;
 
-  // Find a preference that matches their current base/seat and has a BPL
+  // Does their current base/seat appear as their #1 preference?
+  const topPref = (pe.preferences || [])[0];
+  const isAtOperf1 =
+    topPref &&
+    String(topPref.base).toUpperCase() === p.current.base &&
+    String(topPref.seat).toUpperCase() === p.current.seat;
+
+  // Only bother checking BPL if they’re sitting in a seat with a BPL defined
   const stayPref = (pe.preferences || []).find(x =>
     String(x.base).toUpperCase() === p.current.base &&
     String(x.seat).toUpperCase() === p.current.seat &&
     Number(x.bpl_min) > 0
   );
 
-  if (stayPref) {
+  if (stayPref && isAtOperf1) {
     const bpl = bplSatisfied(p, stayPref, homeK);
-
     if (bpl.ok) {
-      // ✅ Senior enough to stay — lock them in current base/seat
       pinned.add(p.sen);
       if (pilotMatchesTrace(p))
-        logTrace(`PINNED: ${p.sen} staying ${p.current.base} ${p.current.seat} (BPL met)`);
+        logTrace(`PINNED: ${p.sen} staying ${p.current.base} ${p.current.seat} (BPL met + #1 pref)`);
     } else {
-      // ❌ Too junior for their own BPL — allow them to bid out
       stayPref.stay = true;
       if (pilotMatchesTrace(p))
         logTrace(`BPL NOT MET: ${p.sen} ${p.current.base} ${p.current.seat} (looking to move)`);
     }
   }
 }
+
   // ===== Vacancy-first (posted adds, CA only) =====
   VacFirst:
   while (true){
@@ -569,6 +571,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
