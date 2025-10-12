@@ -32,20 +32,6 @@
   </style>
 </head>
 <body>
-  <!-- Simple password gate (set to "12"); delete this block if not needed -->
-  <script>
-    const correct = "12";
-    let entered = sessionStorage.getItem("pwok");
-    if (!entered) {
-      const p = prompt("Enter site password:");
-      if (p === correct) sessionStorage.setItem("pwok","true");
-      else {
-        document.write("<h2 style='font-family:sans-serif;color:#ccc;text-align:center;margin-top:40vh;'>Access denied</h2>");
-        throw new Error("Unauthorized");
-      }
-    }
-  </script>
-
   <div class="banner">Base Trace — Vacancy-ledger · Restart-every-award · Improve-only · BPL · Paper</div>
 
   <div class="wrap">
@@ -391,10 +377,38 @@ function run(){
 
   const sorted = roster.slice().sort((a,b)=>a.sen-b.sen);
   pinned.clear(); bestRank.clear();
-  for (const p of sorted){
-    const r0 = prefRank(p, p.current.base, p.current.seat);
-    bestRank.set(p.sen, r0);
-    if (r0 === 1) pinned.add(p.sen);
+ // ===== Pre-pass BPL lock for same-seat lines =====
+// Checks if a pilot’s own-base/seat BPL is satisfied before running the bid.
+// If their BPL is met -> mark them BPL-hold (can stay or upgrade).
+// If not met -> mark that "stay" pref so they can move out.
+for (const p of sorted) {
+  const homeK = key(p.current.base, p.current.seat);
+  const pe = prefEntryFor(p);
+  if (!pe) continue;
+
+  const stayPref = (pe.preferences || []).find(x =>
+    String(x.base).toUpperCase() === p.current.base &&
+    String(x.seat).toUpperCase() === p.current.seat &&
+    Number(x.bpl_min) > 0
+  );
+
+  if (stayPref) {
+    const bpl = bplSatisfied(p, stayPref, homeK);
+
+    if (bpl.ok) {
+      // ✅ Senior enough to hold current seat — mark as BPL-protected but still eligible to upgrade
+      p.bpl_hold = true;
+      pinned.delete(p.sen);   // unlock them first
+      // Keep pinned only if they're truly on Bid Perf #1 (their top choice)
+      if (bestRank.get(p.sen) === 1) pinned.add(p.sen);
+      if (pilotMatchesTrace(p))
+        logTrace(`BPL HOLD: ${p.sen} holds ${p.current.base} ${p.current.seat} (BPL met)`);
+    } else {
+      // ❌ Too junior for their own BPL — allow them to bid out
+      stayPref.stay = true;
+      if (pilotMatchesTrace(p))
+        logTrace(`BPL NOT MET: ${p.sen} ${p.current.base} ${p.current.seat} (looking to move)`);
+    }
   }
 
   // ===== Vacancy-first (posted adds, CA only) =====
@@ -402,7 +416,7 @@ function run(){
   while (true){
     let awarded = false;
     for (const p of sorted){
-      if (pinned.has(p.sen)) continue;
+     if (pinned.has(p.sen) && !p.bpl_hold) continue;
       const fromK = key(p.current.base, p.current.seat);
       const wants = rankPrefs(p).filter(w => String(w.seat||'').toUpperCase() === 'CA');
       for (const w of wants){
@@ -412,8 +426,13 @@ function run(){
         if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
         const rNow = bestRank.get(p.sen) ?? Infinity;
         const rWish = prefRank(p, w.base, 'CA');
-        if (rWish >= rNow){ if (pilotMatchesTrace(p)) logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`); continue; }
-        const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
+       // Allow moves out of base even if not an "improvement"
+// Only enforce improvement for same-base choices
+if (rWish >= rNow && w.base === p.current.base) {
+  if (pilotMatchesTrace(p))
+    logTrace(`  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`);
+  continue;
+}
 
         // AWARD (Vacancy-first)
         state.pass++;
@@ -443,7 +462,7 @@ function run(){
   while (true){
     let awarded = false;
     for (const p of sorted){
-      if (pinned.has(p.sen)) continue;
+      if (pinned.has(p.sen) && !p.bpl_hold) continue;
       const fromK = key(p.current.base, p.current.seat);
       const list = rankPrefs(p);
       for (const w of list){
@@ -454,8 +473,14 @@ function run(){
         if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
         const rNow = bestRank.get(p.sen) ?? Infinity;
         const rWish = prefRank(p, w.base, w.seat);
-        if (rWish >= rNow){ if (pilotMatchesTrace(p)) logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`); continue; }
-        const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
+     // Allow moves out of base even if not an "improvement"
+// Only enforce improvement for same-base choices
+if (rWish >= rNow && w.base === p.current.base) {
+  if (pilotMatchesTrace(p))
+    logTrace(`  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`);
+  continue;
+}
+
 
         // AWARD (Cascade)
         state.pass++;
@@ -504,6 +529,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
