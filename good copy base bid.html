@@ -484,63 +484,89 @@ if (rWish >= rNow && w.base === p.current.base) {
     if (!awarded) break;
   }
 
-  // ===== Cascade/backfill =====
-  Cascade:
-  while (true){
-    let awarded = false;
-    for (const p of sorted){
-      if (pinned.has(p.sen)) continue;
-      const fromK = key(p.current.base, p.current.seat);
-      const list = rankPrefs(p);
-      for (const w of list){
-     // ----- Improved stop-after-home with BPL logic -----
-if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) {
-  // If a BPL exists, check if it’s satisfied; if yes, pin (stay), else allow further moves
-  const bpl = bplSatisfied(p, w, key(w.base, w.seat));
-  if (bpl.ok) {
-    pinned.add(p.sen);              // lock them in current base
-    if (pilotMatchesTrace(p)) logTrace(`PINNED: ${p.sen} staying ${w.base} ${w.seat} (BPL met)`);
-    break;                          // satisfied, stop scanning
-  } else {
-    if (pilotMatchesTrace(p)) logTrace(`BPL not met (${bpl.reason}) → continuing search`);
-    continue;                       // not senior enough → keep looking at next prefs
-  }
-}
+ // ===== Cascade/backfill (multi-round full-seniority rebid) =====
+let anyMoves = true;
+while (anyMoves) {
+  anyMoves = false; // assume stability until a move happens
 
-        const toK = key(w.base,w.seat);
-        const have = vacAmt(toK);
-        if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`);
-        if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
-        const rNow = bestRank.get(p.sen) ?? Infinity;
-        const rWish = prefRank(p, w.base, w.seat);
-   // Allow moves out of base even if not an "improvement"
-// Only enforce improvement for same-base choices
-if (rWish >= rNow && w.base === p.current.base) {
-  if (pilotMatchesTrace(p))
-    logTrace(`  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`);
-  continue;
-}
-        const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
+  for (const p of sorted) {
+    if (pinned.has(p.sen)) continue;
 
-        // AWARD (Cascade)
-        state.pass++;
-        const rows=[];
-        award(p, fromK, toK, 'cascade', rows);
-if (!isPaper(p)) {
-  // Real pilot: consumes destination seat, creates backfill at origin
-  vacDec(toK, 1);
-  vacInc(fromK, 1);
-} else {
-  // Paper pilot: purely hypothetical — no capacity impact
-  if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not change capacity`);
-}
-        renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
-        awarded = true;
-        continue Cascade; // restart from #1
+    const fromK = key(p.current.base, p.current.seat);
+    const list = rankPrefs(p);
+
+    for (const w of list) {
+      // ----- Improved stop-after-home with BPL logic -----
+      if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) {
+        const hasBpl = Number(w.bpl_min ?? 0) > 0;
+        if (hasBpl) {
+          const bpl = bplSatisfied(p, w, key(w.base, w.seat));
+          if (bpl.ok) {
+            pinned.add(p.sen);
+            if (pilotMatchesTrace(p))
+              logTrace(`PINNED: ${p.sen} staying ${w.base} ${w.seat} (BPL met)`);
+            break;
+          } else {
+            if (pilotMatchesTrace(p))
+              logTrace(`BPL not met (${bpl.reason}) → continuing search`);
+            continue;
+          }
+        }
       }
+
+      const toK = key(w.base, w.seat);
+      const have = vacAmt(toK);
+      if (pilotMatchesTrace(p))
+        logTrace(
+          `[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`
+        );
+      if (have <= 0) {
+        if (pilotMatchesTrace(p)) logTrace("  REJECT: no vacancy");
+        continue;
+      }
+
+      const rNow = bestRank.get(p.sen) ?? Infinity;
+      const rWish = prefRank(p, w.base, w.seat);
+      // Allow moves out of base even if not an "improvement"
+      // Only enforce improvement for same-base choices
+      if (rWish >= rNow && w.base === p.current.base) {
+        if (pilotMatchesTrace(p))
+          logTrace(
+            `  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`
+          );
+        continue;
+      }
+
+      const bpl = bplSatisfied(p, w, toK);
+      if (!bpl.ok) {
+        if (pilotMatchesTrace(p)) logTrace("  REJECT: BPL");
+        continue;
+      }
+
+      // AWARD (Cascade)
+      state.pass++;
+      const rows = [];
+      award(p, fromK, toK, "cascade", rows);
+      if (!isPaper(p)) {
+        // Real pilot: consumes destination seat, creates backfill at origin
+        vacDec(toK, 1);
+        vacInc(fromK, 1);
+      } else {
+        // Paper pilot: purely hypothetical — no capacity impact
+        if (pilotMatchesTrace(p))
+          logTrace(`  PAPER BID: ${p.sen} move does not change capacity`);
+      }
+
+      renderLedgerRows(rows);
+      renderOpen();
+      renderNamesBySeniority();
+
+      anyMoves = true; // trigger another full seniority sweep
+      break; // stop scanning this pilot after successful move
     }
-    if (!awarded) break;
   }
+}
+
 
   state.running = false;
   $status.textContent = `Simulation complete. Passes=${state.pass}, Moves=${state.moves.length}`;
@@ -569,6 +595,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
