@@ -449,13 +449,14 @@ if (stayPref) {
         if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
         const rNow = bestRank.get(p.sen) ?? Infinity;
         const rWish = prefRank(p, w.base, 'CA');
- // Allow moves out of base even if not an "improvement"
+// Allow moves out of base even if not an "improvement"
 // Only enforce improvement for same-base choices
 if (rWish >= rNow && w.base === p.current.base) {
   if (pilotMatchesTrace(p))
     logTrace(`  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`);
   continue;
 }
+
 
 
         const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
@@ -512,13 +513,14 @@ if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) {
         if (have<=0){ if (pilotMatchesTrace(p)) logTrace('  REJECT: no vacancy'); continue; }
         const rNow = bestRank.get(p.sen) ?? Infinity;
         const rWish = prefRank(p, w.base, w.seat);
-   // Allow moves out of base even if not an "improvement"
+// Allow moves out of base even if not an "improvement"
 // Only enforce improvement for same-base choices
 if (rWish >= rNow && w.base === p.current.base) {
   if (pilotMatchesTrace(p))
     logTrace(`  REJECT: not improvement within ${w.base} (best=${rNow}, wish=${rWish})`);
   continue;
 }
+
         const bpl = bplSatisfied(p,w,toK); if(!bpl.ok){ if (pilotMatchesTrace(p)) logTrace('  REJECT: BPL'); continue; }
 
         // AWARD (Cascade)
@@ -568,6 +570,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
