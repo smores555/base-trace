@@ -159,18 +159,16 @@ function sameChoice(desiredBase, desiredSeat, curBase, curSeat){
   if (!ds) return true;
   return ds === cs;
 }
-function rankPrefs(p){
+function rankPrefs(p) {
   const pe = prefEntryFor(p);
-  const list = (pe?.preferences || []).slice().filter(x => x && x.stay !== true);
-  list.sort((a,b)=> (a.order||0) - (b.order||0));
-  let stopIdx = -1;
-  for (let i=0; i<list.length; i++){
-    if (sameChoice(list[i].base, list[i].seat, p.current.base, p.current.seat)){ stopIdx = i; break; }
-  }
-  if (stopIdx >= 0) return list.slice(0, stopIdx+1);
+  const list = (pe?.preferences || [])
+    .slice()
+    .filter(x => x && x.stay !== true)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  // Don’t slice here — cascade handles stop-after-home + BPL logic dynamically
   return list;
 }
-
 // ===== Trace helpers =====
 function qNorm(s){ return String(s||'').trim().toUpperCase(); }
 function pilotMatchesTrace(p){
@@ -514,6 +512,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
