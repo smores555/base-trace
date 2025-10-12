@@ -421,9 +421,14 @@ function run(){
         award(p, fromK, toK, 'posted-add', rows);
 
         // Paper: only non-paper consumes destination seat
-        if (!isPaper(p)) { vacDec(toK,1); }
-        else { if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not consume capacity`); }
-        vacInc(fromK,1);
+       if (!isPaper(p)) {
+  // Real pilot: consumes destination seat, creates backfill at origin
+  vacDec(toK, 1);
+  vacInc(fromK, 1);
+} else {
+  // Paper pilot: purely hypothetical — no capacity impact
+  if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not change capacity`);
+}
 
         renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
         awarded = true;
@@ -456,11 +461,14 @@ function run(){
         state.pass++;
         const rows=[];
         award(p, fromK, toK, 'cascade', rows);
-
-        if (!isPaper(p)) { vacDec(toK,1); }
-        else { if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not consume capacity`); }
-        vacInc(fromK,1);
-
+if (!isPaper(p)) {
+  // Real pilot: consumes destination seat, creates backfill at origin
+  vacDec(toK, 1);
+  vacInc(fromK, 1);
+} else {
+  // Paper pilot: purely hypothetical — no capacity impact
+  if (pilotMatchesTrace(p)) logTrace(`  PAPER BID: ${p.sen} move does not change capacity`);
+}
         renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
         awarded = true;
         continue Cascade; // restart from #1
@@ -496,6 +504,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
