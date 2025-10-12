@@ -366,10 +366,30 @@ const bestRank = new Map(); // SEN -> best rank so far
 // ===== Engine =====
 function award(p, fromK, toK, tag, rows){
   const [tb,ts] = toK.split('__'); const [fb,fs] = (fromK||'|').split('__');
-  rows.push({pass:state.pass, action: isPaper(p) ? "FILLED (PAPER)" : "FILLED", pilot:`SEN ${p.sen}`, from:"", to:`${tb} ${ts}`});
-  if (fromK){ rows.push({pass:state.pass, action:"CREATED", pilot:`SEN ${p.sen}`, from:`${fb} ${fs}`, to:""}); }
-  if (!isPaper(p)) moveOccupant(p, fromK, toK);
+ // FILLED row: always show (for ledger visibility)
+rows.push({
+  pass: state.pass,
+  action: isPaper(p) ? "FILLED (PAPER)" : "FILLED",
+  pilot: `SEN ${p.sen}`,
+  from: "",
+  to: `${tb} ${ts}`
+});
+
+// CREATED + real movement only for non-paper
+if (!isPaper(p)) {
+  if (fromK) {
+    rows.push({
+      pass: state.pass,
+      action: "CREATED",
+      pilot: `SEN ${p.sen}`,
+      from: `${fb} ${fs}`,
+      to: ""
+    });
+  }
+  moveOccupant(p, fromK, toK);
   p.current = { base: tb, seat: ts };
+}
+
   const mtype = (fs==='FO' && ts==='CA') ? 'upgrade' : 'lateral';
   state.moves.push({ sen:p.sen, name:p.name||'', fromB:fb, fromS:fs, toB:tb, toS:ts, move_type:mtype });
 
@@ -504,6 +524,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
