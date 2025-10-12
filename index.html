@@ -412,12 +412,13 @@ for (const p of sorted) {
   const pe = prefEntryFor(p);
   if (!pe) continue;
 
-  // Find a preference that matches their current base/seat and has a BPL
-  const stayPref = (pe.preferences || []).find(x =>
-    String(x.base).toUpperCase() === p.current.base &&
-    String(x.seat).toUpperCase() === p.current.seat &&
-    Number(x.bpl_min) > 0
-  );
+ // Only consider a BPL if bpl_min > 0 (zero means unrestricted)
+const stayPref = (pe.preferences || []).find(x =>
+  String(x.base).toUpperCase() === p.current.base &&
+  String(x.seat).toUpperCase() === p.current.seat &&
+  Number(x.bpl_min ?? 0) > 0
+);
+
 
   if (stayPref) {
     const bpl = bplSatisfied(p, stayPref, homeK);
@@ -569,6 +570,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
