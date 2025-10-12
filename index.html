@@ -537,7 +537,7 @@ if (!isPaper(p)) {
 }
         renderLedgerRows(rows); renderOpen(); renderNamesBySeniority();
         awarded = true;
-        continue Cascade; // restart from #1
+        break Cascade; // fully restart the outer while(true) from pilot #1
       }
     }
     if (!awarded) break;
@@ -570,6 +570,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
