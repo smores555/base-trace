@@ -448,10 +448,13 @@ function run(){
 
   const rNow = bestRank.get(p.sen) ?? Infinity;
   const rWish = prefRank(p, w.base, w.seat);
-  if (rWish >= rNow) {
-    if (pilotMatchesTrace(p))
-      logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`);
-    continue;
+ // Allow "non-improvement" if pilot fails BPL at home (forced move)
+const homeChoice = { base: p.current.base, seat: p.current.seat };
+const homeBpl = bplSatisfied(p, homeChoice, key(p.current.base, p.current.seat));
+if (rWish >= rNow && homeBpl.ok) {
+  if (pilotMatchesTrace(p))
+    logTrace(`  REJECT: not improvement (best=${rNow}, wish=${rWish})`);
+  continue;
   }
 
   const bpl = bplSatisfied(p, w, toK);
@@ -512,6 +515,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
