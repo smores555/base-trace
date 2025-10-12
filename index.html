@@ -403,38 +403,41 @@ function run(){
     bestRank.set(p.sen, r0);
     if (r0 === 1) pinned.add(p.sen);
   }
-// ===== Pre-pass BPL lock for same-seat lines =====
-// Checks if a pilot’s own-base/seat BPL is satisfied before running the bid.
-// If their BPL is met -> pin them (they stay put).
-// If not met -> mark that "stay" pref so they can move out.
+// ===== Pre-pass BPL lock (only pin if at #1 preference and BPL > 0 met) =====
 for (const p of sorted) {
   const homeK = key(p.current.base, p.current.seat);
   const pe = prefEntryFor(p);
   if (!pe) continue;
 
-  // Find a preference that matches their current base/seat and has a BPL
-  const stayPref = (pe.preferences || []).find(x =>
-    String(x.base).toUpperCase() === p.current.base &&
-    String(x.seat).toUpperCase() === p.current.seat &&
-    Number(x.bpl_min) > 0
-  );
+  // Get #1 preference
+  const topPref = (pe.preferences || [])[0];
+  const atTop =
+    topPref &&
+    String(topPref.base).toUpperCase() === p.current.base &&
+    String(topPref.seat).toUpperCase() === p.current.seat;
 
-  if (stayPref) {
-    const bpl = bplSatisfied(p, stayPref, homeK);
+  if (!atTop) continue; // skip unless already at #1 preference
 
-    if (bpl.ok) {
-      // ✅ Senior enough to stay — lock them in current base/seat
-      pinned.add(p.sen);
-      if (pilotMatchesTrace(p))
-        logTrace(`PINNED: ${p.sen} staying ${p.current.base} ${p.current.seat} (BPL met)`);
-    } else {
-      // ❌ Too junior for their own BPL — allow them to bid out
-      stayPref.stay = true;
-      if (pilotMatchesTrace(p))
-        logTrace(`BPL NOT MET: ${p.sen} ${p.current.base} ${p.current.seat} (looking to move)`);
-    }
+  // Skip entirely if BPL is 0 or missing (unrestricted)
+  const limit = Number(topPref.bpl_min ?? 0);
+  if (limit <= 0) continue;
+
+  // Check BPL satisfaction
+  const bpl = bplSatisfied(p, topPref, homeK);
+  if (bpl.ok) {
+    pinned.add(p.sen);
+    if (pilotMatchesTrace(p))
+      logTrace(
+        `PINNED: ${p.sen} staying ${p.current.base} ${p.current.seat} (#1 pref & BPL=${limit} met)`
+      );
+  } else {
+    if (pilotMatchesTrace(p))
+      logTrace(
+        `BPL NOT MET: ${p.sen} ${p.current.base} ${p.current.seat} (#1 pref, unmet BPL=${limit})`
+      );
   }
 }
+
   // ===== Vacancy-first (posted adds, CA only) =====
   VacFirst:
   while (true){
@@ -569,6 +572,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
