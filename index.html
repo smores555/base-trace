@@ -357,7 +357,19 @@ function award(p, fromK, toK, tag, rows){
   moveOccupant(p, fromK, toK);
   p.current = { base: tb, seat: ts };
   const mtype = (fs==='FO' && ts==='CA') ? 'upgrade' : 'lateral';
-  state.moves.push({ sen:p.sen, name:p.name||'', fromB:fb, fromS:fs, toB:tb, toS:ts, move_type:mtype });
+  // Record only if the pilot actually changed base or seat
+if (tb !== fb || ts !== fs) {
+  state.moves.push({
+    sen: p.sen,
+    name: p.name || '',
+    fromB: fb,
+    fromS: fs,
+    toB: tb,
+    toS: ts,
+    move_type: mtype
+  });
+}
+
 
   const rNew = prefRank(p, tb, ts);
   bestRank.set(p.sen, Math.min(bestRank.get(p.sen) ?? Infinity, rNew));
@@ -530,6 +542,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
