@@ -22212,6 +22212,7 @@
         "base": "LAX",
         "seat": "CA",
         "bpl_min": 0
+        "paper": true
       }
     ]
   },
