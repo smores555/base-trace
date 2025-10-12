@@ -467,7 +467,20 @@ function run(){
       const fromK = key(p.current.base, p.current.seat);
       const list = rankPrefs(p);
       for (const w of list){
-        if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) break; // stop-after-home
+     // ----- Improved stop-after-home with BPL logic -----
+if (sameChoice(w.base, w.seat, p.current.base, p.current.seat)) {
+  // If a BPL exists, check if it’s satisfied; if yes, pin (stay), else allow further moves
+  const bpl = bplSatisfied(p, w, key(w.base, w.seat));
+  if (bpl.ok) {
+    pinned.add(p.sen);              // lock them in current base
+    if (pilotMatchesTrace(p)) logTrace(`PINNED: ${p.sen} staying ${w.base} ${w.seat} (BPL met)`);
+    break;                          // satisfied, stop scanning
+  } else {
+    if (pilotMatchesTrace(p)) logTrace(`BPL not met (${bpl.reason}) → continuing search`);
+    continue;                       // not senior enough → keep looking at next prefs
+  }
+}
+
         const toK = key(w.base,w.seat);
         const have = vacAmt(toK);
         if (pilotMatchesTrace(p)) logTrace(`[PASS ${state.pass}] Pref ${w.base} ${w.seat} (Vac=${have}) for ${p.sen} ${p.name}`);
@@ -524,6 +537,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
