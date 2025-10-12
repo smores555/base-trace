@@ -403,11 +403,31 @@ function run(){
     bestRank.set(p.sen, r0);
     if (r0 === 1) pinned.add(p.sen);
   }
-// ===== Pre-pass BPL lock (only pin if BPL met *and* at #1 pref) =====
+// ===== Pre-pass BPL lock (only pin if currently at #1 pref *and* BPL met) =====
 for (const p of sorted) {
-  const homeK = key(p.current.base, p.current.seat);
   const pe = prefEntryFor(p);
   if (!pe) continue;
+
+  const top = (pe.preferences || [])[0];
+  if (!top) continue;
+
+  // Only consider pinning if pilot is *already sitting* in their #1 preference
+  const atTop =
+    String(top.base).toUpperCase() === p.current.base &&
+    String(top.seat).toUpperCase() === p.current.seat;
+
+  if (!atTop) continue; // <-- skip pinning entirely
+
+  const homeK = key(p.current.base, p.current.seat);
+  const bpl = bplSatisfied(p, top, homeK);
+
+  if (bpl.ok) {
+    pinned.add(p.sen);
+    if (pilotMatchesTrace(p))
+      logTrace(`PINNED: ${p.sen} staying ${p.current.base} ${p.current.seat} (#1 pref & BPL met)`);
+  }
+}
+
 
   // Does their current base/seat appear as their #1 preference?
   const topPref = (pe.preferences || [])[0];
@@ -571,6 +591,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
