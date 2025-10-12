@@ -32,20 +32,6 @@
   </style>
 </head>
 <body>
-  <!-- Simple password gate (set to "12"); delete this block if not needed -->
-  <script>
-    const correct = "12";
-    let entered = sessionStorage.getItem("pwok");
-    if (!entered) {
-      const p = prompt("Enter site password:");
-      if (p === correct) sessionStorage.setItem("pwok","true");
-      else {
-        document.write("<h2 style='font-family:sans-serif;color:#ccc;text-align:center;margin-top:40vh;'>Access denied</h2>");
-        throw new Error("Unauthorized");
-      }
-    }
-  </script>
-
   <div class="banner">Base Trace — Vacancy-ledger · Restart-every-award · Improve-only · BPL · Paper</div>
 
   <div class="wrap">
@@ -504,6 +490,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
