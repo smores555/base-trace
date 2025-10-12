@@ -377,7 +377,7 @@ function run(){
 
   const sorted = roster.slice().sort((a,b)=>a.sen-b.sen);
   pinned.clear(); bestRank.clear();
- // ===== Pre-pass BPL lock for same-seat lines =====
+// ===== Pre-pass BPL lock for same-seat lines =====
 // Checks if a pilot’s own-base/seat BPL is satisfied before running the bid.
 // If their BPL is met -> mark them BPL-hold (can stay or upgrade).
 // If not met -> mark that "stay" pref so they can move out.
@@ -410,6 +410,7 @@ for (const p of sorted) {
         logTrace(`BPL NOT MET: ${p.sen} ${p.current.base} ${p.current.seat} (looking to move)`);
     }
   }
+} // ⬅️ This closing brace ends the pre-pass cleanly before Vacancy-first starts
 
   // ===== Vacancy-first (posted adds, CA only) =====
   VacFirst:
@@ -529,6 +530,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 </body>
 </html>
+
 
 
 
