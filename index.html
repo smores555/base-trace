@@ -9,7 +9,10 @@
 </script>  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ProTrace Home Base</title>
+  <title>Base/Seat Queue Tool</title>
+  
+  <meta name="robots" content="noindex, nofollow">
+
   <style>
     :root {
       --bg: #0b0f16; --card: #121a27; --accent: #2a66ff;
@@ -31,7 +34,6 @@
     th { color: var(--accent); text-transform: uppercase; font-size: 11px; }
     
     .bpl-pill { display: inline-block; padding: 2px 6px; background: rgba(255, 125, 125, 0.15); border: 1px solid var(--danger); border-radius: 4px; color: var(--danger); font-weight: 800; font-size: 10px; margin-left: 8px; }
-    .ok { color: var(--success); } .no { color: var(--danger); }
     .summary-text { font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 10px; }
   </style>
 </head>
@@ -84,12 +86,11 @@
     </div>
 
     <div class="card">
-      <label>Senior Competitors Breakdown</label>
+      <label>Senior Competitors Breakdown (Anonymized)</label>
       <table>
         <thead>
           <tr>
-            <th>Sen</th>
-            <th>Name</th>
+            <th>Sen #</th>
             <th>Current Status</th>
             <th>Bid Order</th>
             <th>BPL Limit</th>
@@ -128,21 +129,20 @@ function runAnalysis() {
   const mySen = parseInt(document.getElementById("senInput").value);
   const tBase = document.getElementById("baseSelect").value;
   const tSeat = document.getElementById("seatSelect").value;
-  const tBid = `${tBase} ${tSeat}`;
 
   const user = ROSTER.find(p => parseInt(p.sen) === mySen);
   if (!user) return alert("Pilot not found.");
 
-  // Update Status Summary for User
+  // Update Status Summary - Names removed
   const uStatus = findCurrent(user);
-  document.getElementById("userStatusSummary").textContent = `Logged in: ${user.name.split(',')[0]} (${uStatus})`;
+  document.getElementById("userStatusSummary").textContent = `Analysis for Seniority: ${user.sen} (${uStatus})`;
 
   const competitors = [];
   let bplCount = 0;
 
   ROSTER.forEach(p => {
     const pSen = parseInt(p.sen);
-    if (pSen >= mySen) return; // Only senior pilots
+    if (pSen >= mySen) return; 
 
     const pPrefObj = PREFS[`pil${pSen}`] || PREFS[pSen];
     if (!pPrefObj || !pPrefObj.preferences) return;
@@ -154,7 +154,6 @@ function runAnalysis() {
       const bidOrder = parseInt(entry.order);
       const bplVal = parseInt(entry.bpl_min || 0);
 
-      // Rule: Skip if they are already in target or staying put
       if (bidOrder === 1 && (bidStr === "" || bidStr.includes(curStatus))) break;
       
       if (bidStr.includes(tBase) && bidStr.includes(tSeat)) {
@@ -163,7 +162,6 @@ function runAnalysis() {
         if (bplVal > 0) bplCount++;
         competitors.push({
           sen: pSen,
-          name: p.name,
           current: curStatus,
           order: bidOrder,
           bpl: bplVal,
@@ -175,22 +173,18 @@ function runAnalysis() {
     }
   });
 
-  const ahead = competitors.length;
-  const pos = ahead + 1; // Position is always People Ahead + 1
-  const openingsNeeded = pos; // To hold, you need slots equal to your position
-
-  document.getElementById("aheadResult").textContent = ahead;
-  document.getElementById("lineResult").textContent = pos;
+  document.getElementById("aheadResult").textContent = competitors.length;
+  document.getElementById("lineResult").textContent = competitors.length + 1;
   document.getElementById("bplResult").textContent = bplCount;
-  document.getElementById("deltaResult").textContent = openingsNeeded;
+  document.getElementById("deltaResult").textContent = competitors.length + 1;
 
+  // Render Table - Names removed
   document.getElementById("competitorTable").innerHTML = competitors.sort((a,b) => a.sen - b.sen).map(c => `
     <tr>
       <td>${c.sen}</td>
-      <td>${c.name} ${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : ''}</td>
       <td>${c.current}</td>
       <td>#${c.order}</td>
-      <td>${c.bpl}</td>
+      <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
       <td>${c.full}</td>
     </tr>
   `).join("");
