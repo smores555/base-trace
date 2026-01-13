@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ProTrace Home Base</title>
+  <style>
+    :root {
+      --bg: #0b0f16; --card: #121a27; --accent: #2a66ff;
+      --text: #e8eefc; --border: rgba(255,255,255,.1);
+      --success: #7dff9a; --danger: #ff7d7d;
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    
+    label { display: block; font-size: 11px; font-weight: 700; opacity: .6; text-transform: uppercase; margin-bottom: 8px; }
+    input, select, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.1); background: #0d1420; color: white; box-sizing: border-box; }
+    button { background: var(--accent); border: none; font-weight: 800; cursor: pointer; margin-top: 10px; }
+    
+    .big-num { font-size: 32px; font-weight: 900; color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+    th { color: var(--accent); text-transform: uppercase; font-size: 11px; }
+    
+    .bpl-pill { display: inline-block; padding: 2px 6px; background: rgba(255, 125, 125, 0.15); border: 1px solid var(--danger); border-radius: 4px; color: var(--danger); font-weight: 800; font-size: 10px; margin-left: 8px; }
+    .ok { color: var(--success); } .no { color: var(--danger); }
+    .summary-text { font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Base/Seat Queue Tool</h2>
+      <div class="grid">
+        <div>
+          <label>Your Seniority #</label>
+          <input id="senInput" type="number" placeholder="e.g. 2670">
+          <div id="userStatusSummary" class="summary-text"></div>
+        </div>
+        <div>
+          <label>Target Base</label>
+          <select id="baseSelect">
+            <option value="ANC">ANC</option><option value="LAX">LAX</option>
+            <option value="PDX">PDX</option><option value="SAN">SAN</option>
+            <option value="SEA">SEA</option><option value="SFO">SFO</option>
+          </select>
+        </div>
+        <div>
+          <label>Target Seat</label>
+          <select id="seatSelect">
+            <option value="CA">Captain (CA)</option>
+            <option value="FO">First Officer (FO)</option>
+          </select>
+        </div>
+      </div>
+      <button id="calcBtn">Run Analytics</button>
+    </div>
+
+    <div class="grid">
+      <div class="card" style="text-align:center;">
+        <label>People Ahead</label>
+        <div id="aheadResult" class="big-num">-</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <label>Your Position</label>
+        <div id="lineResult" class="big-num">-</div>
+      </div>
+      <div class="card" style="text-align:center; border: 1px solid var(--danger);">
+        <label>BPL Competitors</label>
+        <div id="bplResult" class="big-num" style="color:var(--danger);">-</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <label>Required Openings</label>
+        <div id="deltaResult" class="big-num">-</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Senior Competitors Breakdown</label>
+      <table>
+        <thead>
+          <tr>
+            <th>Sen</th>
+            <th>Name</th>
+            <th>Current Status</th>
+            <th>Bid Order</th>
+            <th>BPL Limit</th>
+            <th>Full Bid</th>
+          </tr>
+        </thead>
+        <tbody id="competitorTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+let ROSTER = [], PREFS = {}, CAPACITIES = [];
+
+function findCurrent(p) {
+  if (!p || !p.current) return "";
+  const b = p.current.base || "";
+  const s = p.current.seat || "";
+  return `${String(b).trim()} ${String(s).trim()}`;
+}
+
+async function loadData() {
+  try {
+    const [r, p, c] = await Promise.all([
+      fetch('./roster.json').then(res => res.json()),
+      fetch('./preferences.json').then(res => res.json()),
+      fetch('./capacities.json').then(res => res.json())
+    ]);
+    ROSTER = Array.isArray(r) ? r : Object.values(r);
+    PREFS = p;
+    CAPACITIES = c;
+  } catch (e) { console.error("Error loading JSON."); }
+}
+
+function runAnalysis() {
+  const mySen = parseInt(document.getElementById("senInput").value);
+  const tBase = document.getElementById("baseSelect").value;
+  const tSeat = document.getElementById("seatSelect").value;
+  const tBid = `${tBase} ${tSeat}`;
+
+  const user = ROSTER.find(p => parseInt(p.sen) === mySen);
+  if (!user) return alert("Pilot not found.");
+
+  // Update Status Summary for User
+  const uStatus = findCurrent(user);
+  document.getElementById("userStatusSummary").textContent = `Logged in: ${user.name.split(',')[0]} (${uStatus})`;
+
+  const competitors = [];
+  let bplCount = 0;
+
+  ROSTER.forEach(p => {
+    const pSen = parseInt(p.sen);
+    if (pSen >= mySen) return; // Only senior pilots
+
+    const pPrefObj = PREFS[`pil${pSen}`] || PREFS[pSen];
+    if (!pPrefObj || !pPrefObj.preferences) return;
+
+    const curStatus = findCurrent(p);
+
+    for (const entry of pPrefObj.preferences) {
+      const bidStr = String(entry.bid || "").trim();
+      const bidOrder = parseInt(entry.order);
+      const bplVal = parseInt(entry.bpl_min || 0);
+
+      // Rule: Skip if they are already in target or staying put
+      if (bidOrder === 1 && (bidStr === "" || bidStr.includes(curStatus))) break;
+      
+      if (bidStr.includes(tBase) && bidStr.includes(tSeat)) {
+        if (curStatus !== "" && bidStr.includes(curStatus)) break;
+
+        if (bplVal > 0) bplCount++;
+        competitors.push({
+          sen: pSen,
+          name: p.name,
+          current: curStatus,
+          order: bidOrder,
+          bpl: bplVal,
+          full: bidStr
+        });
+        break; 
+      }
+      if (curStatus !== "" && bidStr.includes(curStatus)) break;
+    }
+  });
+
+  const ahead = competitors.length;
+  const pos = ahead + 1; // Position is always People Ahead + 1
+  const openingsNeeded = pos; // To hold, you need slots equal to your position
+
+  document.getElementById("aheadResult").textContent = ahead;
+  document.getElementById("lineResult").textContent = pos;
+  document.getElementById("bplResult").textContent = bplCount;
+  document.getElementById("deltaResult").textContent = openingsNeeded;
+
+  document.getElementById("competitorTable").innerHTML = competitors.sort((a,b) => a.sen - b.sen).map(c => `
+    <tr>
+      <td>${c.sen}</td>
+      <td>${c.name} ${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : ''}</td>
+      <td>${c.current}</td>
+      <td>#${c.order}</td>
+      <td>${c.bpl}</td>
+      <td>${c.full}</td>
+    </tr>
+  `).join("");
+}
+
+document.getElementById("calcBtn").addEventListener("click", runAnalysis);
+loadData();
+</script>
+</body>
+</html>
