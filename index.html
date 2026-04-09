@@ -154,11 +154,11 @@ function runAnalysis() {
       const bidOrder = parseInt(entry.order);
       const bplVal = parseInt(entry.bpl_min || 0);
 
-      if (bidOrder === 1 && (bidStr === "" || bidStr.includes(curStatus))) break;
+      // Stop checking if they submitted a blank bid
+      if (bidStr === "") break;
       
+      // 1. Check if the bid is for the target base/seat we are analyzing
       if (bidStr.includes(tBase) && bidStr.includes(tSeat)) {
-        if (curStatus !== "" && bidStr.includes(curStatus)) break;
-
         if (bplVal > 0) bplCount++;
         competitors.push({
           sen: pSen,
@@ -167,9 +167,15 @@ function runAnalysis() {
           bpl: bplVal,
           full: bidStr
         });
-        break; 
+        break; // Found the target, stop checking lower preferences for this pilot
       }
-      if (curStatus !== "" && bidStr.includes(curStatus)) break;
+      
+      // 2. Check if the bid matches their current status
+      // If it does, and it wasn't the target (which was handled above), 
+      // they will just hold their current seat instead of taking anything lower.
+      if (curStatus !== "" && bidStr.includes(curStatus)) {
+        break;
+      }
     }
   });
 
