@@ -35,12 +35,20 @@
     
     .bpl-pill { display: inline-block; padding: 2px 6px; background: rgba(255, 125, 125, 0.15); border: 1px solid var(--danger); border-radius: 4px; color: var(--danger); font-weight: 800; font-size: 10px; margin-left: 8px; }
     .summary-text { font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 10px; }
+    
+    .data-dates { text-align: center; font-size: 12px; opacity: 0.6; margin-top: -5px; margin-bottom: 20px; font-weight: 600; line-height: 1.6; text-transform: uppercase; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h2>Base/Seat Queue Tool</h2>
+      <h2 style="text-align: center; margin-bottom: 5px;">Base/Seat Queue Tool</h2>
+      
+      <div class="data-dates">
+        Using seniority list data FEB 2026<br>
+        Using position bid data 06-2026
+      </div>
+
       <div class="grid">
         <div>
           <label>Your Seniority #</label>
@@ -133,7 +141,7 @@ function runAnalysis() {
   const user = ROSTER.find(p => parseInt(p.sen) === mySen);
   if (!user) return alert("Pilot not found.");
 
-  // Update Status Summary - Names removed
+  // Update Status Summary
   const uStatus = findCurrent(user);
   document.getElementById("userStatusSummary").textContent = `Analysis for Seniority: ${user.sen} (${uStatus})`;
 
@@ -154,15 +162,20 @@ function runAnalysis() {
       const bidOrder = parseInt(entry.order);
       const bplVal = parseInt(entry.bpl_min || 0);
 
-      if (bidOrder === 1 && (bidStr === "" || bidStr.includes(curStatus))) break;
+      // Stop checking if they submitted a blank bid
+      if (bidStr === "") break;
+
+      // 1. STAY-PUT CHECK: If the bid includes their current status, they are staying put.
+      // They are not competing for a NEW vacancy, so we break and DO NOT count them.
+      if (curStatus !== "" && bidStr.includes(curStatus)) {
+        break;
+      }
       
-      // THE FIX: Use regex to match exact words so "SFO" doesn't falsely match "FO"
+      // 2. TARGET CHECK: Use Regex to ensure exact word matches 
       const matchBase = new RegExp(`\\b${tBase}\\b`).test(bidStr);
       const matchSeat = new RegExp(`\\b${tSeat}\\b`).test(bidStr);
 
       if (matchBase && matchSeat) {
-        if (curStatus !== "" && bidStr.includes(curStatus)) break;
-
         if (bplVal > 0) bplCount++;
         competitors.push({
           sen: pSen,
@@ -171,9 +184,8 @@ function runAnalysis() {
           bpl: bplVal,
           full: bidStr
         });
-        break; 
+        break; // Found the target, stop checking lower preferences for this pilot
       }
-      if (curStatus !== "" && bidStr.includes(curStatus)) break;
     }
   });
 
@@ -182,7 +194,7 @@ function runAnalysis() {
   document.getElementById("bplResult").textContent = bplCount;
   document.getElementById("deltaResult").textContent = competitors.length + 1;
 
-  // Render Table - Names removed
+  // Render Table
   document.getElementById("competitorTable").innerHTML = competitors.sort((a,b) => a.sen - b.sen).map(c => `
     <tr>
       <td>${c.sen}</td>
