@@ -39,11 +39,11 @@
     .data-dates { 
       text-align: center; 
       font-size: 12px; 
-      opacity: 1;
-      color: #ffffff;
+      opacity: 1;           /* Fully opaque for maximum visibility */
+      color: #ffffff;       /* Pure white */
       margin-top: -5px; 
       margin-bottom: 20px; 
-      font-weight: 900;
+      font-weight: 900;     /* Ultra bold */
       line-height: 1.6; 
       text-transform: uppercase; 
     }
@@ -123,23 +123,11 @@
 <script>
 let ROSTER = [], PREFS = {}, CAPACITIES = [];
 
-function getCurrentStatus(p) {
-  if (!p || !p.current) return { base: "", seat: "", str: "" };
-  const base = String(p.current.base || "").trim();
-  const seat = String(p.current.seat || "").trim();
-  return { base, seat, str: `${base} ${seat}` };
-}
-
-function bidMatchesTarget(bidStr, tBase, tSeat) {
-  return new RegExp(`\\b${tBase}\\b`).test(bidStr) &&
-         new RegExp(`\\b${tSeat}\\b`).test(bidStr);
-}
-
-function bidMatchesCurrent(bidStr, curBase, curSeat) {
-  // A bid "holds" if it contains both the pilot's current base AND seat
-  return curBase && curSeat &&
-         new RegExp(`\\b${curBase}\\b`).test(bidStr) &&
-         new RegExp(`\\b${curSeat}\\b`).test(bidStr);
+function findCurrent(p) {
+  if (!p || !p.current) return "";
+  const b = p.current.base || "";
+  const s = p.current.seat || "";
+  return `${String(b).trim()} ${String(s).trim()}`;
 }
 
 async function loadData() {
@@ -163,69 +151,48 @@ function runAnalysis() {
   const user = ROSTER.find(p => parseInt(p.sen) === mySen);
   if (!user) return alert("Pilot not found.");
 
-  const { str: uStatusStr } = getCurrentStatus(user);
-  document.getElementById("userStatusSummary").textContent =
-    `Analysis for Seniority: ${user.sen} (${uStatusStr})`;
+  // Update Status Summary
+  const uStatus = findCurrent(user);
+  document.getElementById("userStatusSummary").textContent = `Analysis for Seniority: ${user.sen} (${uStatus})`;
 
   const competitors = [];
   let bplCount = 0;
 
   ROSTER.forEach(p => {
     const pSen = parseInt(p.sen);
-    if (pSen >= mySen) return; // Only seniors
+    if (pSen >= mySen) return; 
 
     const pPrefObj = PREFS[`pil${pSen}`] || PREFS[pSen];
     if (!pPrefObj || !pPrefObj.preferences) return;
 
-    const { base: curBase, seat: curSeat } = getCurrentStatus(p);
+    const curStatus = findCurrent(p);
 
-    // Filter #1: Skip pilots already sitting in the target base+seat.
-    // They won't be moving — they're already there.
-    if (curBase === tBase && curSeat === tSeat) return;
-
-    // Sort preferences by order ascending (defensive, data should already be ordered)
-    const sortedPrefs = [...pPrefObj.preferences]
-      .filter(e => String(e.bid || "").trim() !== "")
-      .sort((a, b) => parseInt(a.order) - parseInt(b.order));
-
-    // Walk preferences in priority order
-    for (const entry of sortedPrefs) {
+    for (const entry of pPrefObj.preferences) {
       const bidStr = String(entry.bid || "").trim();
-      if (bidStr === "") continue;
+      const bidOrder = parseInt(entry.order);
+      const bplVal = parseInt(entry.bpl_min || 0);
 
-      const isTargetBid  = bidMatchesTarget(bidStr, tBase, tSeat);
-      const isCurrentBid = bidMatchesCurrent(bidStr, curBase, curSeat);
+      if (bidStr === "") break;
 
-      if (isTargetBid) {
-        // Filter #2: Only count them if THIS is the first preference we've hit
-        // that isn't their current position. If it's also their current position
-        // (i.e. target == current, caught above), we already skipped them.
-        // Reaching here means: they want this slot and it's their top active bid.
-        const bplVal = parseInt(entry.bpl_min || 0);
+      if (curStatus !== "" && bidStr.includes(curStatus)) {
+        break;
+      }
+      
+      const matchBase = new RegExp(`\\b${tBase}\\b`).test(bidStr);
+      const matchSeat = new RegExp(`\\b${tSeat}\\b`).test(bidStr);
+
+      if (matchBase && matchSeat) {
         if (bplVal > 0) bplCount++;
         competitors.push({
           sen: pSen,
-          current: `${curBase} ${curSeat}`,
-          order: parseInt(entry.order),
+          current: curStatus,
+          order: bidOrder,
           bpl: bplVal,
           full: bidStr
         });
-        return; // done with this pilot
-
-      } else if (isCurrentBid) {
-        // This bid matches their current position — they are "holding" here.
-        // They won't be awarded anything above this (they already have it).
-        // Any target bid below this in their list they wouldn't actually need/get.
-        return; // skip this pilot — not a real competitor
-
-      } else {
-        // Filter #3: This is a higher-priority bid for a DIFFERENT position.
-        // They'd be awarded this slot before ever reaching the target bid.
-        // So they are NOT competing for the target.
-        return; // skip this pilot
+        break; 
       }
     }
-    // If we exhausted all preferences without finding the target, they're not bidding it.
   });
 
   document.getElementById("aheadResult").textContent = competitors.length;
@@ -233,17 +200,15 @@ function runAnalysis() {
   document.getElementById("bplResult").textContent = bplCount;
   document.getElementById("deltaResult").textContent = competitors.length + 1;
 
-  document.getElementById("competitorTable").innerHTML = competitors
-    .sort((a, b) => a.sen - b.sen)
-    .map(c => `
-      <tr>
-        <td>${c.sen}</td>
-        <td>${c.current}</td>
-        <td>#${c.order}</td>
-        <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
-        <td>${c.full}</td>
-      </tr>
-    `).join("");
+  document.getElementById("competitorTable").innerHTML = competitors.sort((a,b) => a.sen - b.sen).map(c => `
+    <tr>
+      <td>${c.sen}</td>
+      <td>${c.current}</td>
+      <td>#${c.order}</td>
+      <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
+      <td>${c.full}</td>
+    </tr>
+  `).join("");
 }
 
 document.getElementById("calcBtn").addEventListener("click", runAnalysis);
