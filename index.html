@@ -136,7 +136,6 @@ function bidMatchesTarget(bidStr, tBase, tSeat) {
 }
 
 function bidMatchesCurrent(bidStr, curBase, curSeat) {
-  // A bid "holds" if it contains both the pilot's current base AND seat
   return curBase && curSeat &&
          new RegExp(`\\b${curBase}\\b`).test(bidStr) &&
          new RegExp(`\\b${curSeat}\\b`).test(bidStr);
@@ -172,23 +171,24 @@ function runAnalysis() {
 
   ROSTER.forEach(p => {
     const pSen = parseInt(p.sen);
-    if (pSen >= mySen) return; // Only seniors
+    if (pSen >= mySen) return;
 
     const pPrefObj = PREFS[`pil${pSen}`] || PREFS[pSen];
     if (!pPrefObj || !pPrefObj.preferences) return;
 
     const { base: curBase, seat: curSeat } = getCurrentStatus(p);
 
-    // Filter #1: Skip pilots already sitting in the target base+seat.
-    // They won't be moving — they're already there.
+    // Skip pilots already in the target seat — they aren't moving there
     if (curBase === tBase && curSeat === tSeat) return;
 
-    // Sort preferences by order ascending (defensive, data should already be ordered)
     const sortedPrefs = [...pPrefObj.preferences]
       .filter(e => String(e.bid || "").trim() !== "")
       .sort((a, b) => parseInt(a.order) - parseInt(b.order));
 
-    // Walk preferences in priority order
+    // Walk ALL preferences in order until we find the target or their current hold.
+    // - If we hit the target first → count them as a competitor
+    // - If we hit their current base/seat first → they're satisfied, stop, don't count
+    // - Any other bid above the target → keep walking (they may or may not get it)
     for (const entry of sortedPrefs) {
       const bidStr = String(entry.bid || "").trim();
       if (bidStr === "") continue;
@@ -197,10 +197,7 @@ function runAnalysis() {
       const isCurrentBid = bidMatchesCurrent(bidStr, curBase, curSeat);
 
       if (isTargetBid) {
-        // Filter #2: Only count them if THIS is the first preference we've hit
-        // that isn't their current position. If it's also their current position
-        // (i.e. target == current, caught above), we already skipped them.
-        // Reaching here means: they want this slot and it's their top active bid.
+        // Found the target — count them regardless of what order number it is
         const bplVal = parseInt(entry.bpl_min || 0);
         if (bplVal > 0) bplCount++;
         competitors.push({
@@ -210,22 +207,17 @@ function runAnalysis() {
           bpl: bplVal,
           full: bidStr
         });
-        return; // done with this pilot
-
-      } else if (isCurrentBid) {
-        // This bid matches their current position — they are "holding" here.
-        // They won't be awarded anything above this (they already have it).
-        // Any target bid below this in their list they wouldn't actually need/get.
-        return; // skip this pilot — not a real competitor
-
-      } else {
-        // Filter #3: This is a higher-priority bid for a DIFFERENT position.
-        // They'd be awarded this slot before ever reaching the target bid.
-        // So they are NOT competing for the target.
-        return; // skip this pilot
+        return;
       }
+
+      if (isCurrentBid) {
+        // Their current position appears before the target — they're holding here,
+        // so they'd never actually need the target bid. Don't count them.
+        return;
+      }
+
+      // Some other bid above the target — keep walking
     }
-    // If we exhausted all preferences without finding the target, they're not bidding it.
   });
 
   document.getElementById("aheadResult").textContent = competitors.length;
@@ -239,7 +231,7 @@ function runAnalysis() {
       <tr>
         <td>${c.sen}</td>
         <td>${c.current}</td>
-        <td>#${c.order}</td>
+        <td><span style="font-weight:800; color: ${c.order === 1 ? 'var(--text)' : c.order === 2 ? '#f5c842' : '#ff9f43'}">#${c.order}</span></td>
         <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
         <td>${c.full}</td>
       </tr>
