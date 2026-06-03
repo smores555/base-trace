@@ -39,11 +39,11 @@
     .data-dates { 
       text-align: center; 
       font-size: 12px; 
-      opacity: 1;
-      color: #ffffff;
+      opacity: 1;           /* Fully opaque for maximum visibility */
+      color: #ffffff;       /* Pure white */
       margin-top: -5px; 
       margin-bottom: 20px; 
-      font-weight: 900;
+      font-weight: 900;     /* Ultra bold */
       line-height: 1.6; 
       text-transform: uppercase; 
     }
@@ -123,22 +123,11 @@
 <script>
 let ROSTER = [], PREFS = {}, CAPACITIES = [];
 
-function getCurrentStatus(p) {
-  if (!p || !p.current) return { base: "", seat: "", str: "" };
-  const base = String(p.current.base || "").trim();
-  const seat = String(p.current.seat || "").trim();
-  return { base, seat, str: `${base} ${seat}` };
-}
-
-function bidMatchesTarget(bidStr, tBase, tSeat) {
-  return new RegExp(`\\b${tBase}\\b`).test(bidStr) &&
-         new RegExp(`\\b${tSeat}\\b`).test(bidStr);
-}
-
-function bidMatchesCurrent(bidStr, curBase, curSeat) {
-  return curBase && curSeat &&
-         new RegExp(`\\b${curBase}\\b`).test(bidStr) &&
-         new RegExp(`\\b${curSeat}\\b`).test(bidStr);
+function findCurrent(p) {
+  if (!p || !p.current) return "";
+  const b = p.current.base || "";
+  const s = p.current.seat || "";
+  return `${String(b).trim()} ${String(s).trim()}`;
 }
 
 async function loadData() {
@@ -162,61 +151,47 @@ function runAnalysis() {
   const user = ROSTER.find(p => parseInt(p.sen) === mySen);
   if (!user) return alert("Pilot not found.");
 
-  const { str: uStatusStr } = getCurrentStatus(user);
-  document.getElementById("userStatusSummary").textContent =
-    `Analysis for Seniority: ${user.sen} (${uStatusStr})`;
+  // Update Status Summary
+  const uStatus = findCurrent(user);
+  document.getElementById("userStatusSummary").textContent = `Analysis for Seniority: ${user.sen} (${uStatus})`;
 
   const competitors = [];
   let bplCount = 0;
 
   ROSTER.forEach(p => {
     const pSen = parseInt(p.sen);
-    if (pSen >= mySen) return;
+    if (pSen >= mySen) return; 
 
     const pPrefObj = PREFS[`pil${pSen}`] || PREFS[pSen];
     if (!pPrefObj || !pPrefObj.preferences) return;
 
-    const { base: curBase, seat: curSeat } = getCurrentStatus(p);
+    const curStatus = findCurrent(p);
 
-    // Skip pilots already in the target seat — they aren't moving there
-    if (curBase === tBase && curSeat === tSeat) return;
-
-    const sortedPrefs = [...pPrefObj.preferences]
-      .filter(e => String(e.bid || "").trim() !== "")
-      .sort((a, b) => parseInt(a.order) - parseInt(b.order));
-
-    // Walk ALL preferences in order until we find the target or their current hold.
-    // - If we hit the target first → count them as a competitor
-    // - If we hit their current base/seat first → they're satisfied, stop, don't count
-    // - Any other bid above the target → keep walking (they may or may not get it)
-    for (const entry of sortedPrefs) {
+    for (const entry of pPrefObj.preferences) {
       const bidStr = String(entry.bid || "").trim();
-      if (bidStr === "") continue;
+      const bidOrder = parseInt(entry.order);
+      const bplVal = parseInt(entry.bpl_min || 0);
 
-      const isTargetBid  = bidMatchesTarget(bidStr, tBase, tSeat);
-      const isCurrentBid = bidMatchesCurrent(bidStr, curBase, curSeat);
+      if (bidStr === "") break;
 
-      if (isTargetBid) {
-        // Found the target — count them regardless of what order number it is
-        const bplVal = parseInt(entry.bpl_min || 0);
+      if (curStatus !== "" && bidStr.includes(curStatus)) {
+        break;
+      }
+      
+      const matchBase = new RegExp(`\\b${tBase}\\b`).test(bidStr);
+      const matchSeat = new RegExp(`\\b${tSeat}\\b`).test(bidStr);
+
+      if (matchBase && matchSeat) {
         if (bplVal > 0) bplCount++;
         competitors.push({
           sen: pSen,
-          current: `${curBase} ${curSeat}`,
-          order: parseInt(entry.order),
+          current: curStatus,
+          order: bidOrder,
           bpl: bplVal,
           full: bidStr
         });
-        return;
+        break; 
       }
-
-      if (isCurrentBid) {
-        // Their current position appears before the target — they're holding here,
-        // so they'd never actually need the target bid. Don't count them.
-        return;
-      }
-
-      // Some other bid above the target — keep walking
     }
   });
 
@@ -225,17 +200,15 @@ function runAnalysis() {
   document.getElementById("bplResult").textContent = bplCount;
   document.getElementById("deltaResult").textContent = competitors.length + 1;
 
-  document.getElementById("competitorTable").innerHTML = competitors
-    .sort((a, b) => a.sen - b.sen)
-    .map(c => `
-      <tr>
-        <td>${c.sen}</td>
-        <td>${c.current}</td>
-        <td><span style="font-weight:800; color: ${c.order === 1 ? 'var(--text)' : c.order === 2 ? '#f5c842' : '#ff9f43'}">#${c.order}</span></td>
-        <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
-        <td>${c.full}</td>
-      </tr>
-    `).join("");
+  document.getElementById("competitorTable").innerHTML = competitors.sort((a,b) => a.sen - b.sen).map(c => `
+    <tr>
+      <td>${c.sen}</td>
+      <td>${c.current}</td>
+      <td>#${c.order}</td>
+      <td>${c.bpl > 0 ? `<span class="bpl-pill">BPL ${c.bpl}</span>` : '0'}</td>
+      <td>${c.full}</td>
+    </tr>
+  `).join("");
 }
 
 document.getElementById("calcBtn").addEventListener("click", runAnalysis);
